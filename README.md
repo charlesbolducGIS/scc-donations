@@ -13,7 +13,7 @@ This application enables the Sutton Conservation Commission (SCC) to accept dona
 
 1. **Clone the repository and install dependencies:**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/charlesbolducGIS/scc-donations-dev.git
    cd sccDonationsDev
    npm install
    ```
