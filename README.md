@@ -80,4 +80,4 @@ This application enables the Sutton Conservation Commission (SCC) to accept dona
 
 ## License
 
-[Add your license here, if applicable]
+This project is licensed under the [MIT License](LICENSE).
