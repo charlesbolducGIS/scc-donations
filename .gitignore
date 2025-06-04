@@ -1,0 +1,4 @@
+node_modules/
+.env
+.DS_Store
+server/refresh_token.txt
