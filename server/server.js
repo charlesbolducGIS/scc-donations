@@ -83,15 +83,23 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 // Payment transaction endpoint
 app.post('/api/payments/v1/checkout/transaction', async (req, res) => {
   const transactionToken = req.body?.transactionToken;
+  const amount = req.body?.amount; // <--- ADD THIS LINE to get the amount from the request body
+
   if (!transactionToken) {
     return res.status(400).json({ error: 'Missing transactionToken' });
+  }
+  if (!amount) { // <--- ADD THIS CHECK
+    return res.status(400).json({ error: 'Missing amount' });
   }
 
   try {
     const token = await getAccessToken();
     const response = await axios.post(
       'https://api.sky.blackbaud.com/payments/v1/checkout/transaction',
-      { transaction_token: transactionToken },
+      {
+        transaction_token: transactionToken,
+        amount: parseFloat(amount) // <--- ADD THIS LINE to send the amount to Blackbaud
+      },
       {
         headers: {
           Authorization: `Bearer ${token}`,

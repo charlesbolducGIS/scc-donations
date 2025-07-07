@@ -49,6 +49,7 @@
 
       document.addEventListener('checkoutComplete', function (e) {
         const transactionToken = e.detail?.transactionToken;
+        const selectedAmount = document.getElementById('amount').value; // <--- ADD THIS LINE to get the selected amount
 
         if (!transactionToken) {
           console.error('Transaction token is missing.');
@@ -61,7 +62,10 @@
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ transactionToken: transactionToken }),
+          body: JSON.stringify({
+            transactionToken: transactionToken,
+            amount: selectedAmount, // <--- ADD THIS LINE to send the amount
+          }),
         })
           .then((response) => {
             if (!response.ok) {
