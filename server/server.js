@@ -49,7 +49,7 @@ function loadRefreshToken() {
   return null;
 }
 
-// Helper to get a valid access token using Authorization Code or Refresh Token
+// Helper to get a valid OAuth access token using Authorization Code or Refresh Token
 async function getAccessToken() {
   const now = Date.now();
   // Check if existing token is valid for at least 1 minute to avoid expiry during use
@@ -103,7 +103,7 @@ async function getAccessToken() {
       );
     }
   } else {
-    console.log("No refresh token found. Initial authorization required.");
+    console.log("No refresh token found. Initiate Admin Login Endpoint.");
     throw new Error(
       "No valid refresh token. Please (re)authorize the application."
     );
@@ -116,11 +116,11 @@ app.use(express.static(path.join(__dirname, "..", "public")));
 
 // Payment transaction endpoint
 app.post("/api/payments/v1/checkout/transaction", async (req, res) => {
-  const transactionToken = req.body?.transactionToken;
-  const amount = req.body?.amount;
+  const transactionToken = req.body?.transactionToken; // This is the token from the frontend
+  let amount = req.body?.amount; // Use 'let' because we'll modify it
 
   if (!transactionToken) {
-    console.error("Transaction token is missing in request body."); // Log missing token
+    console.error("Transaction token is missing in request body."); // Log missing transactionToken
     return res.status(400).json({ error: "Missing transactionToken" });
   }
   if (!amount) {
@@ -130,25 +130,34 @@ app.post("/api/payments/v1/checkout/transaction", async (req, res) => {
 
   try {
     const token = await getAccessToken();
+    // Log the retrieved OAuth token status
     console.log(
-      "Access token retrieved for transaction:",
+      "OAuth token retrieved for transaction:",
       token ? "Exists" : "Does NOT exist"
     );
-    // Log first few characters of token for verification, but not the full token for security
+    // Log first few characters of OAuth token for verification, but not the full token for security
     console.log(
-      "Making request to Blackbaud Payments API with token starting with:",
+      "Making request to Blackbaud Payments API with OAuth token starting with:",
       token ? token.substring(0, 10) + "..." : "N/A"
     );
+    // Log the individual transaction token
+    console.log(
+      "Transaction Token (from individual transaction):",
+      transactionToken
+    );
+    // Convert amount to cents (integer)
+    amount = Math.round(parseFloat(amount) * 100); // Convert Dollars to Cents: Multiply by 100 and round to integer
+    console.log("Sending amount to Blackbaud (in cents):", amount); // Log Donation Amount (in cents)
 
     const response = await axios.post(
       "https://api.sky.blackbaud.com/payments/v1/checkout/transaction",
       {
-        transaction_token: transactionToken,
-        amount: parseFloat(amount), // Ensure amount is a number
+        authorization_token: transactionToken,
+        amount: amount, // Use the converted amount
       },
       {
         headers: {
-          Authorization: `Bearer ${token}`, // Use the retrieved token
+          Authorization: `Bearer ${token}`,
           "Bb-Api-Subscription-Key": payAPIkey,
           "Content-Type": "application/json",
         },
@@ -161,16 +170,14 @@ app.post("/api/payments/v1/checkout/transaction", async (req, res) => {
       "Error completing checkout:",
       err.response?.data || err.message
     );
-    res
-      .status(500)
-      .json({
-        error: "Error completing checkout",
-        details: err.response?.data || err.message,
-      });
+    res.status(500).json({
+      error: "Error completing checkout",
+      details: err.response?.data || err.message,
+    });
   }
 });
 
-// Admin login endpoint: redirect to Blackbaud for authorization
+// Admin login endpoint: redirect to Blackbaud for OAuth Authorization
 app.get("/auth/login", (req, res) => {
   console.log(
     "Received request for /auth/login. Redirecting to Blackbaud for authorization."
