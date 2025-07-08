@@ -5,58 +5,91 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
   <title>Stewardship Donation Fund</title>
+  <!-- Tailwind CSS for basic styling and responsiveness -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts - Inter for a modern look -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
 </head>
-<body>
-  <div id="app">
-    <h1>Stewardship Donation Fund</h1>
-    <label for="amount">How much would you like to donate?</label>
-    <select id="amount">
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+  <div id="app" class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+    <h1 class="text-3xl font-bold mb-6 text-center text-gray-800">Stewardship Donation Fund</h1>
+
+    <label for="amount" class="block text-gray-700 text-sm font-bold mb-2">How much would you like to donate?</label>
+    <select id="amount" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-4">
       <option value="5">$5</option>
       <option value="10">$10</option>
       <option value="15">$15</option>
       <option value="20">$20</option>
     </select>
-    <button type="submit" id="donate-now">Donate now!</button>
+    <button type="submit" id="donate-now" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline w-full transition duration-150 ease-in-out">
+      Donate now!
+    </button>
+
+    <!-- Message box for displaying success/error messages -->
+    <div id="message-box" class="mt-4 p-3 rounded-md text-sm hidden" role="alert"></div>
   </div>
+
   <script>
+    // Function to display messages to the user
+    function showMessage(message, type = 'error') {
+      const msgBox = document.getElementById('message-box');
+      msgBox.textContent = message;
+      msgBox.className = `mt-4 p-3 rounded-md text-sm ${type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'} block`;
+      // Hide the message after 5 seconds
+      setTimeout(() => {
+        msgBox.classList.add('hidden');
+      }, 5000);
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
       // Ensure the SDK is loaded before using it
       if (typeof Blackbaud_OpenPaymentForm === 'undefined') {
         console.error('BBMS Payments SDK not loaded. Ensure the SDK URL is correct.');
+        showMessage('Payment system not loaded. Please try again later.', 'error');
         return;
       }
 
-      // BBMS Parameters (hardcoded or set via <script> in HTML)
-      const publicKey = '5c2ca916-d792-4c02-b960-3f5df8c101ab'; // <-- your pubKey
-      const paymentConfig = '54b73ef8-8b02-4a97-b42d-217ac79c04a0'; // <-- your payConfigID
+      // Blackbaud Checkout Parameters (hardcoded for this development version)
+      // In a more complex production setup, these might be fetched from the backend
+      // or managed via environment variables for greater flexibility.
+      const publicKey = '5c2ca916-d792-4c02-b960-3f5df8c101ab'; // Your Blackbaud Public Key
+      const paymentConfig = '54b73ef8-8b02-4a97-b42d-217ac79c04a0'; // Your Blackbaud Payment Configuration ID
 
-      // Create the transaction object
+      // Create the transaction object for Blackbaud Checkout
       const transactionData = {
         key: publicKey,
         payment_configuration_id: paymentConfig,
+        // Initial amount; will be updated on button click
         Amount: document.getElementById('amount').value,
       };
 
       document.getElementById('donate-now').addEventListener('click', function (e) {
-        e.preventDefault();
+        e.preventDefault(); // Prevent default form submission
 
-        // Update the transaction object with the selected amount
+        // Update the transaction object with the currently selected amount
         transactionData.Amount = document.getElementById('amount').value;
 
-        // Call the Checkout method to display the payment form
+        // Call the Blackbaud Checkout method to display the payment form
         Blackbaud_OpenPaymentForm(transactionData);
       });
 
+      // Listen for the checkoutComplete event from the Blackbaud SDK
       document.addEventListener('checkoutComplete', function (e) {
         const transactionToken = e.detail?.transactionToken;
-        const selectedAmount = document.getElementById('amount').value; // <--- ADD THIS LINE to get the selected amount
+        const selectedAmount = document.getElementById('amount').value;
 
         if (!transactionToken) {
-          console.error('Transaction token is missing.');
-          alert('An error occurred while processing your donation. Please try again.');
+          console.error('Transaction token is missing from Blackbaud SDK response.');
+          showMessage('Payment failed: Missing transaction details. Please try again.', 'error');
           return;
         }
 
+        // Send the transaction token and amount to your backend for processing
         fetch('/api/payments/v1/checkout/transaction', {
           method: 'POST',
           headers: {
@@ -64,22 +97,25 @@
           },
           body: JSON.stringify({
             transactionToken: transactionToken,
-            amount: selectedAmount, // <--- ADD THIS LINE to send the amount
+            amount: selectedAmount,
           }),
         })
           .then((response) => {
             if (!response.ok) {
-              throw new Error(`Server responded with status ${response.status}`);
+              // If the server response is not OK (e.g., 500 status)
+              // Parse the error details from the backend response
+              return response.json().then(errData => { throw new Error(errData.details || 'Unknown server error'); });
             }
-            return response.json();
+            return response.json(); // Parse successful JSON response
           })
           .then((data) => {
-            console.log('Server response:', data);
-            alert('Thank you for your donation!');
+            console.log('Server response (success):', data);
+            showMessage('Thank you for your donation!', 'success');
           })
           .catch((error) => {
             console.error('Error sending transaction token to server:', error.message);
-            alert('An error occurred while processing your donation. Please try again.');
+            // Display a more specific error message from the backend if available
+            showMessage(`An error occurred while processing your donation: ${error.message}. Please try again.`, 'error');
           });
       });
     });
