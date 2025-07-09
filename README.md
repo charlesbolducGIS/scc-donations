@@ -52,7 +52,7 @@ Since the frontend is hosted on CivicPlus (which requires HTTPS) and Blackbaud's
 
 ### Download and Install Ngrok
 
-- Download the appropriate version for your Windows 11 Pro VM (ARM 64-bit is recommended if available) from [ngrok.com/download](https://ngrok.com/download).
+- Download the appropriate version for your system from [ngrok.com/download](https://ngrok.com/download).
 - Unzip `ngrok.exe` and place it in a directory that is in your system's PATH (e.g., `C:\dev_tools`).  
   _Remember to restart your terminal after updating PATH._
 
@@ -124,6 +124,7 @@ This is the development version.
 - For production, the backend (`server.js`) needs to be hosted on a cloud platform (e.g., Vercel, Render, AWS, Azure, Google Cloud) that provides a stable, public HTTPS URL.
 - The `redirectURL` in your production `.env` (or environment variables) must match your production domain (e.g., `https://donations.yourfinaldomain.org/auth/callback`).
 - The `refresh_token.txt` file must be replaced with a secure, persistent storage solution (e.g., encrypted database, cloud secrets manager).
+- The frontend ('public/index.html') must be updated with Your Blackbaud PRODUCTION Payment Configuration ID (const paymentConfig).
 - The frontend (`public/index.html`) will be embedded on the CivicPlus site, making calls to the stable production backend URL.
 
 ---

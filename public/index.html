@@ -5,30 +5,59 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
   <title>Stewardship Donation Fund</title>
-  <!-- Tailwind CSS for basic styling and responsiveness -->
+  <!-- Google Fonts - Roboto for a modern look matching town site -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS for styling and responsiveness -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts - Inter for a modern look -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <script>
+    // Custom Tailwind CSS configuration to match town's color palette and font
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            // Define custom colors based on town's website hex codes
+            'primary-blue': '#2A3C64',      // Main text, header/footer background, button background
+            'light-blue': '#E0E8F8',        // Button hover background
+            'accent-orange': '#DB9A2C',     // Secondary box menu background
+            'black-text': '#000000',        // Secondary box menu text, button hover text
+            'white-text': '#ffffff',        // Primary header/footer text, button text
+          },
+          fontFamily: {
+            // Define custom font family
+            roboto: ['Roboto', 'Arial', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
   <style>
+    /* Apply custom font-family to the body */
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: 'Roboto', 'Arial', sans-serif;
     }
   </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
-  <div id="app" class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
-    <h1 class="text-3xl font-bold mb-6 text-center text-gray-800">Stewardship Donation Fund</h1>
+<body class="bg-white min-h-screen flex items-center justify-center p-4">
+  <div id="app" class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full border border-gray-200">
+    <h1 class="text-primary-blue text-3xl font-bold mb-6 text-center">Stewardship Donation Fund</h1>
 
-    <label for="amount" class="block text-gray-700 text-sm font-bold mb-2">How much would you like to donate?</label>
-    <select id="amount" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-4">
+    <label for="amount" class="block text-primary-blue text-sm font-bold mb-2">How much would you like to donate?</label>
+    <select id="amount" class="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-primary-blue leading-tight focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent mb-4">
       <option value="5">$5</option>
       <option value="10">$10</option>
       <option value="15">$15</option>
       <option value="20">$20</option>
     </select>
-    <button type="submit" id="donate-now" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline w-full transition duration-150 ease-in-out">
+    <button type="submit" id="donate-now" class="bg-primary-blue hover:bg-light-blue text-white-text hover:text-black-text font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline w-full transition duration-150 ease-in-out">
       Donate now!
     </button>
+
+    <!-- Clear Donation Purpose Text -->
+    <p class="text-sm italic text-gray-600 mt-4 text-center">
+      Donations go toward the management, improvement, maintenance and stewardship of Sutton Conservation Commission managed properties. 
+      Both the interest and the principal of this donation may be spent as the Conservation Commission deems to be appropriate.
+    </p>
 
     <!-- Message box for displaying success/error messages -->
     <div id="message-box" class="mt-4 p-3 rounded-md text-sm hidden" role="alert"></div>
@@ -58,12 +87,19 @@
       // In a more complex production setup, these might be fetched from the backend
       // or managed via environment variables for greater flexibility.
       const publicKey = '5c2ca916-d792-4c02-b960-3f5df8c101ab'; // Your Blackbaud Public Key
-      const paymentConfig = '54b73ef8-8b02-4a97-b42d-217ac79c04a0'; // Your Blackbaud Payment Configuration ID
+      const paymentConfig = '54b73ef8-8b02-4a97-b42d-217ac79c04a0'; // Your Blackbaud TEST Payment Configuration ID
+      //const paymentConfig = '2e7ee4ce-7c2b-4a55-ae00-884c869103ae'; // **CHARGES CARD** Your Blackbaud PRODUCTION Payment Configuration ID
 
-      // Create the transaction object for Blackbaud Checkout
+      // Create the transaction object
       const transactionData = {
         key: publicKey,
         payment_configuration_id: paymentConfig,
+        'primary_color': '#2A3C64',
+        'secondary_color': '#DB9A2C',
+        'font_family': 'Roboto, Arial, sans-serif',
+        'font_color': '#ffffff',
+        'client_app_name': 'Sutton ConCom Stewardship Donations App',
+        'use_apple_pay': 'true',
         // Initial amount; will be updated on button click
         Amount: document.getElementById('amount').value,
       };
@@ -123,3 +159,7 @@
   <script src="https://payments.blackbaud.com/Checkout/bbCheckout.2.0.js"></script>
 </body>
 </html>
+<!-- 
+  This HTML file is the main entry point for the Stewardship Donation Fund application.
+  It includes the necessary scripts and styles to create a responsive, modern donation form
+  that integrates with Blackbaud's payment processing system.
