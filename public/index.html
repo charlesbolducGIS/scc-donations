@@ -16,7 +16,7 @@
       theme: {
         extend: {
           colors: {
-            // Define custom colors based on town's website hex codes
+            // Define custom colors based on your provided hex codes
             'primary-blue': '#2A3C64',      // Main text, header/footer background, button background
             'light-blue': '#E0E8F8',        // Button hover background
             'accent-orange': '#DB9A2C',     // Secondary box menu background
@@ -126,7 +126,8 @@
         }
 
         // Send the transaction token and amount to your backend for processing
-        fetch('/api/payments/v1/checkout/transaction', {
+        // The URL below points to your deployed Vercel backend
+        fetch('https://scc-donations-dev.vercel.app/api/payments/v1/checkout/transaction', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -159,7 +160,3 @@
   <script src="https://payments.blackbaud.com/Checkout/bbCheckout.2.0.js"></script>
 </body>
 </html>
-<!-- 
-  This HTML file is the main entry point for the Stewardship Donation Fund application.
-  It includes the necessary scripts and styles to create a responsive, modern donation form
-  that integrates with Blackbaud's payment processing system.
