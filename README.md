@@ -2,82 +2,149 @@
 
 This application enables the Sutton Conservation Commission (SCC) to accept donations using Blackbaud Checkout and the Blackbaud Payments API.
 
-## How it works
+---
 
-- The frontend displays a donation form and uses the Blackbaud Checkout SDK.
-- When a donation is completed, the frontend receives a transaction token and sends it to the backend.
-- The backend uses the Blackbaud OAuth 2.0 Authorization Code flow to obtain an access token and calls the Payments API to complete the transaction.
-- Token refresh is handled automatically by the backend.
+## How it Works
+
+- The frontend (`public/index.html`) displays a donation form and uses the Blackbaud Checkout SDK to securely capture payment information.
+- When a donation is completed via the Blackbaud iFrame, the frontend receives a `transactionToken` and the selected amount.
+- The frontend sends this `transactionToken` and amount to the custom Node.js backend (`server/server.js`).
+- The backend uses the Blackbaud OAuth 2.0 Authorization Code flow to obtain and manage an access token.
+- Using this access token and the `transactionToken` (which acts as an `authorization_token` for the Payments API), the backend calls the Blackbaud Merchant Services (BBMS) Payments API to complete the transaction.
+- Token refresh is handled automatically by the backend to maintain continuous API access.
+
+---
 
 ## Setup
 
 1. **Clone the repository and install dependencies:**
-   ```bash
-   git clone https://github.com/charlesbolducGIS/scc-donations-dev.git
-   cd sccDonationsDev
-   npm install
-   ```
+    ```sh
+    git clone https://github.com/charlesbolducGIS/scc-donations-dev.git
+    cd sccDonationsDev
+    npm install
+    ```
 
 2. **Configure your `.env` file:**
-   - Copy `.env.example` to `.env` and fill in your actual credentials and URLs:
-     ```
-     appID=your_client_id
-     appSecret=your_client_secret
-     payAPIkey=your_payments_api_subscription_key
-     authURL=https://app.blackbaud.com/oauth/authorize
-     tokenURL=https://oauth2.sky.blackbaud.com/token
-     redirectURL=https://yourfinaldomain.org/auth/callback
-     PORT=3000
-     ```
-   - The public key and **payment configuration ID are hardcoded in `public/index.html`** for the development environment.
+    - Copy `.env.example` to `.env` and fill in your actual credentials and URLs:
+        ```
+        appID=your_client_id
+        appSecret=your_client_secret
+        payAPIkey=your_payments_api_subscription_key
+        authURL=https://app.blackbaud.com/oauth/authorize
+        tokenURL=https://oauth2.sky.blackbaud.com/token
+        redirectURL=http://localhost:3000/auth/callback  # Default for local development
+        PORT=3000
+        ```
+    - The `publicKey` and paymentConfig ID are hardcoded in `public/index.html` for this development environment.
 
 3. **Start the backend:**
-   ```bash
-   npm start
-   ```
+    ```sh
+    cd server
+    npm start
+    ```
+    Your server will start and listen on the port defined in your `.env` (e.g., 3000). Keep this terminal running.
 
-4. **Open the app in your browser:**
-   ```
-   http://localhost:3000
-   ```
+---
 
-## Initial Admin Authorization
+## Local Testing with Ngrok
 
-1. Visit `http://localhost:3000/auth/login` in your browser.
+Since the frontend is hosted on CivicPlus (which requires HTTPS) and Blackbaud's OAuth callback needs a public HTTPS URL, we use [ngrok](https://ngrok.com/) to create a secure tunnel to your local backend.
+
+### Download and Install Ngrok
+
+- Download the appropriate version for your system from [ngrok.com/download](https://ngrok.com/download).
+- Unzip `ngrok.exe` and place it in a directory that is in your system's PATH (e.g., `C:\dev_tools`).  
+  _Remember to restart your terminal after updating PATH._
+
+### Authenticate Ngrok
+
+- Sign up for a free Ngrok account at [ngrok.com/signup](https://dashboard.ngrok.com/signup).
+- Copy your authtoken command from the Ngrok dashboard.
+- In a new terminal (separate from your running Node.js server), run:
+    ```sh
+    ngrok authtoken <YOUR_AUTH_TOKEN_HERE>
+    ```
+
+### Create the Ngrok Tunnel
+
+- In the same new terminal, run Ngrok, specifying your backend's port (e.g., 3000):
+    ```sh
+    ngrok http 3000
+    ```
+- Ngrok will provide a public HTTPS forwarding URL (e.g., `https://xxxx-xxxx-xxxx-xxxx.ngrok-free.app`). Copy this HTTPS URL.
+
+### Update Blackbaud Application Redirect URI
+
+- Log in to your Blackbaud Developer account.
+- Go to your application's settings and find the "Redirect URIs" (or "OAuth redirect URI" / "Callback URL") section.
+- Add your Ngrok HTTPS forwarding URL with the `/auth/callback` path (e.g., `https://xxxx-xxxx-xxxx-xxxx.ngrok-free.app/auth/callback`) to the list of allowed URIs.
+
+> **Important:** Ngrok free tier URLs change each time you restart Ngrok. You will need to update this in Blackbaud every time you start a new Ngrok tunnel for testing.
+
+### Update `.env` for Ngrok Testing
+
+- Temporarily change the `redirectURL` in your local `.env` file to match your current Ngrok HTTPS URL:
+    ```
+    redirectURL=https://xxxx-xxxx-xxxx-xxxx.ngrok-free.app/auth/callback
+    ```
+- Save your `.env` file and **RESTART** your Node.js backend server (`Ctrl + C` then `npm start`) for the change to take effect.
+
+---
+
+## Initial Admin Authorization (OAuth Handshake)
+
+Before processing donations, your backend needs to obtain initial OAuth tokens from Blackbaud.
+
+1. Visit the authorization endpoint in your browser (using your current Ngrok URL):  
+   `https://xxxx-xxxx-xxxx-xxxx.ngrok-free.app/auth/login`
 2. Log in with your Blackbaud admin account and authorize the application.
 3. After successful authorization, you will see a message:  
-   `Authorization successful! You may now close this window.`
-4. The backend will store a refresh token in `server/refresh_token.txt` for unattended operation.
+   _"Authorization successful! You may now close this window."_
+4. The backend will store a refresh token in `server/refresh_token.txt` for unattended operation.  
+   This file is excluded from Git via `.gitignore`.
 
-## Re-authorization
+---
 
-- If the server is rebooted and the refresh token is lost or becomes invalid, repeat the initial admin authorization process by visiting `/auth/login` again.
+## Testing the Donation Flow
 
-## Production Deployment
+Once your backend is running, Ngrok is tunneling, and initial authorization is complete:
 
-- **This is the development version.**
-- To create a production version:
-  - Update the `paymentConfig` ID in `public/index.html` to use the values from your live Blackbaud environment.
-  - Update the `redirectURL` in your `.env` to match your production domain, e.g.:
-    ```
-    redirectURL=https://yourfinaldomain.org/auth/callback
-    ```
-  - Ensure your production Blackbaud app settings include the correct redirect URI.
-  - Serve the app over HTTPS (required for Blackbaud Checkout).
-  - For production, consider storing the refresh token in a secure database or encrypted file.
+1. Open your browser (within your Windows VM) and go to your Ngrok forwarding URL:  
+   `https://xxxx-xxxx-xxxx-xxxx.ngrok-free.app`
+2. Select a donation amount and click **"Donate now!"**
+3. The Blackbaud Checkout iFrame should appear. Use Blackbaud's provided test credit card numbers (e.g., Visa: `4242...4242`, Exp: `01/30`, CSC: `123`) to complete the transaction.
+4. Observe the success message in the browser and check your Blackbaud Merchant Services (BBMS) account for the "Approved" transaction.
+
+---
+
+## Production Deployment (Future State)
+
+This is the development version.
+
+- For production, the backend (`server.js`) needs to be hosted on a cloud platform (e.g., Vercel, Render, AWS, Azure, Google Cloud) that provides a stable, public HTTPS URL.
+- The `redirectURL` in your production `.env` (or environment variables) must match your production domain (e.g., `https://donations.yourfinaldomain.org/auth/callback`).
+- The `refresh_token.txt` file must be replaced with a secure, persistent storage solution (e.g., encrypted database, cloud secrets manager).
+- The frontend ('public/index.html') must be updated with Your Blackbaud PRODUCTION Payment Configuration ID (const paymentConfig).
+- The frontend (`public/index.html`) will be embedded on the CivicPlus site, making calls to the stable production backend URL.
+
+---
 
 ## Apple Pay and Digital Wallets
 
-- Apple Pay and Google Pay are enabled via configuration in the Blackbaud Merchant Services portal and your payment configuration.
-- No code changes are required; if enabled, these options will appear automatically in the BBMS Checkout form for supported browsers/devices.
+Apple Pay and Google Pay are enabled via configuration in the Blackbaud Merchant Services portal and your payment configuration.
+
+_No code changes are required; if enabled, these options will appear automatically in the BBMS Checkout form for supported browsers/devices._
+
+---
 
 ## Notes
 
-- All sensitive credentials are kept on the backend.
+- All sensitive credentials are kept on the backend (`.env` file, not committed to Git).
 - The backend will automatically refresh tokens as needed.
-- For production, consider persisting tokens and logs for auditing.
 - The public key and payment configuration ID are safe to expose in the frontend.
+
+---
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the MIT License.
