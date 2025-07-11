@@ -1,15 +1,22 @@
 /**
  * SCC Donation App Backend
  * - Serves static files and handles Blackbaud Merchant Services (BBMS) Payments API calls.
- * - Implements OAuth 2.0 Authorization Code flow for secure API access and refresh token storage.
+ * - Implements OAuth 2.0 Authorization Code flow for secure API access.
+ * - Stores and retrieves refresh tokens securely using Upstash Redis (Vercel KV).
  */
 
 require("dotenv").config();
 const express = require("express");
 const axios = require("axios");
 const path = require("path");
-const fs = require("fs"); // Using synchronous FS for simplicity in this demo/dev setup
 const querystring = require("querystring");
+
+// Import Upstash Redis SDK
+const { Redis } = require("@upstash/redis");
+
+// Initialize Upstash Redis client
+// Redis.fromEnv() automatically picks up KV_URL, KV_REST_API_URL, KV_REST_API_TOKEN from Vercel environment variables.
+const redis = Redis.fromEnv();
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -19,50 +26,54 @@ const { appID, appSecret, payAPIkey, tokenURL, authURL, redirectURL } =
   process.env;
 
 // In-memory storage for the OAuth access token and its expiry.
-// For production, this should be replaced with a secure, persistent storage mechanism (e.g., encrypted database).
+// This is still used for the current request cycle to avoid repeated KV reads.
 let accessToken = null;
 let tokenExpiresAt = 0;
 
-// Path to store the refresh token.
-// IMPORTANT: For production, this file should NOT be used.
-// A secure database or cloud secrets manager is required.
-const REFRESH_TOKEN_PATH = path.join(__dirname, "refresh_token.txt");
+// Define a fixed key for storing the app's single refresh token in Upstash Redis.
+const REFRESH_TOKEN_KEY = "bbms_refresh_token";
 
 /**
- * Saves the refresh token to a local file.
- * In a production environment, this should be stored securely (e.g., encrypted in a database).
+ * Saves the refresh token to Upstash Redis.
  * @param {string} token - The refresh token to save.
  */
-function saveRefreshToken(token) {
+async function saveRefreshToken(token) {
   try {
-    fs.writeFileSync(REFRESH_TOKEN_PATH, token, "utf8");
-    console.log("Refresh token successfully saved to file.");
+    // Set the token with no expiry (or a very long one if desired)
+    await redis.set(REFRESH_TOKEN_KEY, token);
+    console.log("Refresh token successfully saved to Upstash Redis.");
   } catch (error) {
-    console.error("Error saving refresh token to file:", error.message);
+    console.error(
+      "Error saving refresh token to Upstash Redis:",
+      error.message
+    );
   }
 }
 
 /**
- * Loads the refresh token from a local file.
- * @returns {string|null} The loaded refresh token, or null if not found/error.
+ * Loads the refresh token from Upstash Redis.
+ * @returns {Promise<string|null>} The loaded refresh token, or null if not found/error.
  */
-function loadRefreshToken() {
+async function loadRefreshToken() {
   try {
-    if (fs.existsSync(REFRESH_TOKEN_PATH)) {
-      const token = fs.readFileSync(REFRESH_TOKEN_PATH, "utf8");
-      console.log("Refresh token successfully loaded from file.");
+    const token = await redis.get(REFRESH_TOKEN_KEY);
+    if (token) {
+      console.log("Refresh token successfully loaded from Upstash Redis.");
       return token;
     }
   } catch (error) {
-    console.error("Error loading refresh token from file:", error.message);
+    console.error(
+      "Error loading refresh token from Upstash Redis:",
+      error.message
+    );
   }
-  return null; // Return null if file not found or error
+  return null; // Return null if not found or error
 }
 
 /**
  * Retrieves a valid Blackbaud OAuth access token.
  * Prioritizes using an existing, non-expired token.
- * If expired, attempts to refresh using the stored refresh token.
+ * If expired, attempts to refresh using the stored refresh token from Upstash Redis.
  * If no refresh token or refresh fails, throws an error prompting re-authorization.
  * @returns {Promise<string>} The valid access token.
  * @throws {Error} If no valid token can be obtained.
@@ -77,7 +88,7 @@ async function getAccessToken() {
 
   console.log("Attempting to get new access token...");
 
-  let currentRefreshToken = loadRefreshToken();
+  let currentRefreshToken = await loadRefreshToken(); // AWAIT the async call
   if (currentRefreshToken) {
     console.log("Refresh token found. Attempting to refresh access token.");
     try {
@@ -99,7 +110,7 @@ async function getAccessToken() {
         response.data.refresh_token &&
         response.data.refresh_token !== currentRefreshToken
       ) {
-        saveRefreshToken(response.data.refresh_token);
+        await saveRefreshToken(response.data.refresh_token); // AWAIT the async call
       }
       return accessToken;
     } catch (error) {
@@ -121,7 +132,6 @@ async function getAccessToken() {
   }
 }
 
-// Middleware to parse JSON request bodies
 app.use(express.json());
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, "..", "public")));
@@ -235,7 +245,7 @@ app.get("/auth/callback", async (req, res) => {
     tokenExpiresAt = Date.now() + response.data.expires_in * 1000;
     console.log("Initial access token obtained successfully.");
     if (response.data.refresh_token) {
-      saveRefreshToken(response.data.refresh_token);
+      await saveRefreshToken(response.data.refresh_token); // AWAIT the async call
     }
     res.send("Authorization successful! You may now close this window.");
   } catch (err) {
