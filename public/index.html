@@ -87,7 +87,8 @@
 
       // Fetch Blackbaud configuration and Vercel environment from the backend
       try {
-        const response = await fetch('/api/config');
+        // const response = await fetch('/api/config');
+        const response = await fetch(`${window.location.origin}/api/config`); // Use absolute URL to ensure it works in both preview and production
         if (!response.ok) {
           throw new Error('Failed to fetch Blackbaud configuration.');
         }
