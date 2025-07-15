@@ -25,13 +25,13 @@ This application enables the Sutton Conservation Commission (SCC) to accept dona
     ```
 
 2. **Configure your `.env` file for local development:**
-- Copy `.env.example` to `.env` and fill in your actual Blackbaud credentials.
-- For local testing, the `redirectURL` in your `.env` will typically point to `http://localhost:3000/auth/callback` or your Ngrok URL.
-- _Note:_ Vercel deployment uses environment variables configured directly in the Vercel dashboard, not this local `.env` file.
+    - Copy `.env.example` to `.env` and fill in your actual Blackbaud credentials.
+    - For local testing, the `redirectURL` in your `.env` will typically point to `http://localhost:3000/auth/callback` or your Ngrok URL.
+    - _Note:_ Vercel deployment uses environment variables configured directly in the Vercel dashboard, not this local `.env` file.
 
 3. **Vercel Configuration File (`vercel.json`):**
-- This project includes a `vercel.json` file in the root directory. This file is crucial for Vercel to correctly identify your `server/server.js` as a serverless function and `public/` as static assets.
-- No manual changes are needed to `vercel.json` for deployment.
+    - This project includes a `vercel.json` file in the root directory. This file is crucial for Vercel to correctly identify your `server/server.js` as a serverless function and `public/` as static assets.
+    - No manual changes are needed to `vercel.json` for deployment.
 
 ---
 
@@ -48,41 +48,41 @@ This section details how to run and test the application locally using Ngrok to 
 
 2. **Ngrok Setup:**
 
-- Download and install [ngrok](`https://ngrok.com/`) for your system.
-- Authenticate Ngrok with your authtoken: `ngrok authtoken <YOUR_AUTH_TOKEN_HERE>`
-- Create a public HTTPS tunnel to your local backend:
-    ```sh
-    ngrok http 3000
-    ```
-- Ngrok will provide a public HTTPS forwarding URL (e.g., `https://xxxx-xxxx-xxxx-xxxx.ngrok-free.app`). **Copy this URL.**
+    - Download and install [ngrok](`https://ngrok.com/`) for your system.
+    - Authenticate Ngrok with your authtoken: `ngrok authtoken <YOUR_AUTH_TOKEN_HERE>`
+    - Create a public HTTPS tunnel to your local backend:
+        ```sh
+        ngrok http 3000
+        ```
+    - Ngrok will provide a public HTTPS forwarding URL (e.g., `https://xxxx-xxxx-xxxx-xxxx.ngrok-free.app`). **Copy this URL.**
 
 3. **Update Blackbaud Application Redirect URI (for Ngrok):**
-- Log in to your Blackbaud Developer account.
-- Go to your application's settings and find the "Redirect URIs" section.
-- **Add your Ngrok HTTPS forwarding URL** with the `/auth/callback` path (e.g., `https://xxxx-xxxx-xxxx-xxxx.ngrok-free.app/auth/callback`) to the list of allowed URIs.
->   **Important:** Ngrok free tier URLs change each time you restart Ngrok. You will need to update this in Blackbaud *every time* you start a new Ngrok tunnel for testing.
+    - Log in to your Blackbaud Developer account.
+    - Go to your application's settings and find the "Redirect URIs" section.
+    - **Add your Ngrok HTTPS forwarding URL** with the `/auth/callback` path (e.g., `https://xxxx-xxxx-xxxx-xxxx.ngrok-free.app/auth/callback`) to the list of allowed URIs.
+    >   **Important:** Ngrok free tier URLs change each time you restart Ngrok. You will need to update this in Blackbaud *every time* you start a new Ngrok tunnel for testing.
 
 4. **Update Local `.env` for Ngrok Testing:**
-- Temporarily change the `redirectURL` in your local `.env` file to match your current Ngrok HTTPS URL:
-    ```
-    redirectURL=https://xxxx-xxxx-xxxx-xxxx.ngrok-free.app/auth/callback
-    ```
-- Save your `.env` file and **RESTART** your Node.js backend server (`Ctrl + C` then `npm start`) for the change to take effect.
+    - Temporarily change the `redirectURL` in your local `.env` file to match your current Ngrok HTTPS URL:
+        ```
+        redirectURL=https://xxxx-xxxx-xxxx-xxxx.ngrok-free.app/auth/callback
+        ```
+    - Save your `.env` file and **RESTART** your Node.js backend server (`Ctrl + C` then `npm start`) for the change to take effect.
 
 5. **Initial Admin Authorization (Local Ngrok):**
-- Visit the authorization endpoint in your browser (using your current Ngrok URL):  
-    `https://xxxx-xxxx-xxxx-xxxx.ngrok-free.app/auth/login`
-- Log in with your Blackbaud admin account and authorize the application.
-- After successful authorization, you will see a message:  
-    _"Authorization successful! You may now close this window."_
-- The backend will now have obtained an access token and stored the refresh token in Upstash Redis (if connected locally, or in memory/file if not).
+    - Visit the authorization endpoint in your browser (using your current Ngrok URL):  
+        `https://xxxx-xxxx-xxxx-xxxx.ngrok-free.app/auth/login`
+    - Log in with your Blackbaud admin account and authorize the application.
+    - After successful authorization, you will see a message:  
+        _"Authorization successful! You may now close this window."_
+    - The backend will now have obtained an access token and stored the refresh token in Upstash Redis (if connected locally, or in memory/file if not).
 
 6. **Testing the Donation Flow (Local Ngrok):**
-- Open your browser and go to your Ngrok forwarding URL:
-    `https://xxxx-xxxx-xxxx-xxxx.ngrok-free.app`
-- Select a donation amount and click **"Donate now!"**
-- The Blackbaud Checkout iFrame should appear. Use Blackbaud's provided test credit card numbers (e.g., Visa: `4242...4242`, Exp: `01/30`, CSC: `123`) to complete the transaction.
-- Observe the success message in the browser and check your Blackbaud Merchant Services (BBMS) account for the "Approved" transaction.
+    - Open your browser and go to your Ngrok forwarding URL:
+        `https://xxxx-xxxx-xxxx-xxxx.ngrok-free.app`
+    - Select a donation amount and click **"Donate now!"**
+    - The Blackbaud Checkout iFrame should appear. Use Blackbaud's provided test credit card numbers (e.g., Visa: `4242...4242`, Exp: `01/30`, CSC: `123`) to complete the transaction.
+    - Observe the success message in the browser and check your Blackbaud Merchant Services (BBMS) account for the "Approved" transaction.
 
 ---
 
@@ -91,43 +91,43 @@ This section details how to run and test the application locally using Ngrok to 
 This section details how to deploy the application to Vercel for a stable, public hosting environment.
 
 1. **Vercel Project Setup:**
-- Sign up for Vercel and connect your GitHub account: [vercel.com/signup](https://vercel.com/signup)
-- Import your `scc-donations-dev` GitHub repository as a new project in Vercel.
-- **Crucial Setting:** In Vercel Project Settings, ensure the **"Root Directory" is left empty** (or set to `./`) so that Vercel correctly uses the `vercel.json` file to manage your serverless function and static assets.
+    - Sign up for Vercel and connect your GitHub account: [vercel.com/signup](https://vercel.com/signup)
+    - Import your `scc-donations-dev` GitHub repository as a new project in Vercel.
+    - **Crucial Setting:** In Vercel Project Settings, ensure the **"Root Directory" is left empty** (or set to `./`) so that Vercel correctly uses the `vercel.json` file to manage your serverless function and static assets.
 
 2. **Connect Upstash Redis (Vercel KV):**
-- In your Vercel project dashboard, go to the **"Storage"** tab.
-- Click **"Connect Store"** or **"Create KV Database"** and choose **"Upstash for Redis"** from the Marketplace.
-- Follow the prompts to create a new Upstash Redis database (e.g., `scc-refresh-token-kv`) and connect it to your `scc-donations-dev` Vercel project.
-- Vercel will automatically add the necessary environment variables (`KV_URL`, `KV_REST_API_URL`, `KV_REST_API_TOKEN`, etc.) to your project's settings.
+    - In your Vercel project dashboard, go to the **"Storage"** tab.
+    - Click **"Connect Store"** or **"Create KV Database"** and choose **"Upstash for Redis"** from the Marketplace.
+    - Follow the prompts to create a new Upstash Redis database (e.g., `scc-refresh-token-kv`) and connect it to your `scc-donations-dev` Vercel project.
+    - Vercel will automatically add the necessary environment variables (`KV_URL`, `KV_REST_API_URL`, `KV_REST_API_TOKEN`, etc.) to your project's settings.
 
 3. **Configure Vercel Environment Variables:**
-- Go to your Vercel Project **"Settings"** and then **"Environment Variables"**.
-- Add your Blackbaud API credentials (`appID`, `appSecret`, `payAPIkey`, `authURL`, `tokenURL`) here.
-- **Crucially, configure `redirectURL` for both Production and Preview environments:**
-    - **Production:** `redirectURL` = `https://scc-donations-dev.vercel.app/auth/callback`
-    - **Preview:** `redirectURL` = `https://scc-donations-dev-preview.vercel.app/auth/callback` (or the dynamic Vercel preview URL if you don't use a custom preview domain).
-- Ensure all these variables are set to apply to the correct environments (Development, Preview, Production).
+    - Go to your Vercel Project **"Settings"** and then **"Environment Variables"**.
+    - Add your Blackbaud API credentials (`appID`, `appSecret`, `payAPIkey`, `authURL`, `tokenURL`) here.
+    - **Crucially, configure `redirectURL` for both Production and Preview environments:**
+        - **Production:** `redirectURL` = `https://scc-donations-dev.vercel.app/auth/callback`
+        - **Preview:** `redirectURL` = `https://scc-donations-dev-preview.vercel.app/auth/callback` (or the dynamic Vercel preview URL if you don't use a custom preview domain).
+    - Ensure all these variables are set to apply to the correct environments (Development, Preview, Production).
 
 4. **Update Blackbaud Application Redirect URIs (for Vercel):**
-- Log in to your Blackbaud Developer account.
-- Go to your application's settings and find the "Redirect URIs" section.
-- **Add both your Vercel Production and Preview `redirectURL`s** (e.g., `https://scc-donations-dev.vercel.app/auth/callback` and `https://scc-donations-dev-preview.vercel.app/auth/callback`) to the list.
+    - Log in to your Blackbaud Developer account.
+    - Go to your application's settings and find the "Redirect URIs" section.
+    - **Add both your Vercel Production and Preview `redirectURL`s** (e.g., `https://scc-donations-dev.vercel.app/auth/callback` and `https://scc-donations-dev-preview.vercel.app/auth/callback`) to the list.
 
 5. **Initial Admin Authorization (Vercel Deployment):**
-- After Vercel has deployed your application (triggered by pushing changes to GitHub or updating environment variables), you need to perform the initial OAuth handshake on the deployed app.
-- Visit the authorization endpoint in your browser for your **Vercel domain**:  
-  `https://scc-donations-dev.vercel.app/auth/login` (for production)  
-  `https://scc-donations-dev-preview.vercel.app/auth/login` (for preview)
-- Log in with your Blackbaud admin account and authorize the application. This will securely store the refresh token in your connected Upstash Redis database.
+    - After Vercel has deployed your application (triggered by pushing changes to GitHub or updating environment variables), you need to perform the initial OAuth handshake on the deployed app.
+    - Visit the authorization endpoint in your browser for your **Vercel domain**:  
+    `https://scc-donations-dev.vercel.app/auth/login` (for production)  
+    `https://scc-donations-dev-preview.vercel.app/auth/login` (for preview)
+    - Log in with your Blackbaud admin account and authorize the application. This will securely store the refresh token in your connected Upstash Redis database.
 
 6. **Testing the Donation Flow (Vercel Deployment):**
-- Open your browser and go to your Vercel application URL:  
-  `https://scc-donations-dev.vercel.app` (for production)  
-  `https://scc-donations-dev-preview.vercel.app` (for preview)
-- Select a donation amount and click **"Donate now!"**
-- Use Blackbaud's provided test credit card numbers to complete the transaction.
-- Verify the success message in the browser and confirm the "Approved" transaction in your BBMS account. This test should now consistently work due to persistent token storage.
+    - Open your browser and go to your Vercel application URL:  
+    `https://scc-donations-dev.vercel.app` (for production)  
+    `https://scc-donations-dev-preview.vercel.app` (for preview)
+    - Select a donation amount and click **"Donate now!"**
+    - Use Blackbaud's provided test credit card numbers to complete the transaction.
+    - Verify the success message in the browser and confirm the "Approved" transaction in your BBMS account. This test should now consistently work due to persistent token storage.
 
 ---
 
@@ -135,9 +135,9 @@ This section details how to deploy the application to Vercel for a stable, publi
 
 - The application is ready for production deployment on Vercel.
 - To switch to live transactions:
-    1. Update public/index.html: Uncomment the production paymentConfig ID and comment out the test one.
-    2. Update Vercel Environment Variables: Change your appID, appSecret, and payAPIkey environment variables in Vercel to your production Blackbaud API credentials.
-    3. Test Live: Perform a small, real donation using a real credit card to verify the end-to-end live transaction.
+    * Update public/index.html: Uncomment the production paymentConfig ID and comment out the test one.
+    * Update Vercel Environment Variables: Change your appID, appSecret, and payAPIkey environment variables in Vercel to your production Blackbaud API credentials.
+    * Test Live: Perform a small, real donation using a real credit card to verify the end-to-end live transaction.
 
 ---
 
