@@ -40,7 +40,10 @@
 </head>
 <body class="bg-white min-h-screen flex items-center justify-center p-4">
   <div id="app" class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full border border-gray-200">
-    <h1 class="text-primary-blue text-3xl font-bold mb-6 text-center">Stewardship Donation Fund</h1>
+    <h1 class="text-primary-blue text-3xl font-bold mb-6 text-center">
+      Stewardship Donation Fund
+      span id="VercelEnvironment" class="text-sm bg-yellow-200 text-yellow-800 px-2 py-1 rounded-full m1-2 hidden"></span>
+    </h1>
 
     <label for="amount" class="block text-primary-blue text-sm font-bold mb-2">How much would you like to donate?</label>
     <select id="amount" class="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-primary-blue leading-tight focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent mb-4">
@@ -77,10 +80,12 @@
 
     document.addEventListener('DOMContentLoaded', async function () {
       const donateButton = document.getElementById('donate-now');
+      const environmentLabel = document.getElementById('environment-label');
       let publicKey;
       let paymentConfig;
+      let environment;
 
-      // Fetch Blackbaud configuration from the backend
+      // Fetch Blackbaud configuration and Vercel environment from the backend
       try {
         const response = await fetch('/api/config');
         if (!response.ok) {
@@ -89,6 +94,21 @@
         const config = await response.json();
         publicKey = config.publicKey;
         paymentConfig = config.paymentConfig;
+        environment = config.environment; // Get the Vercel environment from the backend
+
+        // Display environment label if not production
+        if (environment && environment !== 'production') {
+          environmentLabel.textContent = `${environment.charAt(0).toUpperCase() + environment.slice(1)} Environment`;
+          environmentLabel.classList.remove('hidden');
+          // Optional: Change color for development environment if needed
+          if (environment === 'development') {
+            environmentLabel.classList.remove('bg-yellow-200', 'text-yellow-800');
+            environmentLabel.classList.add('bg-blue-200', 'text-blue-800');
+          }
+        } else {
+          environmentLabel.classList.add('hidden'); // Ensure it's hidden in production
+        }
+
         donateButton.disabled = false; // Enable button once config is loaded
       } catch (error) {
         console.error('Error loading Blackbaud configuration:', error.message);

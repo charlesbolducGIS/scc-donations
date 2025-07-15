@@ -139,20 +139,21 @@ app.use(express.static(path.join(__dirname, "..", "public")));
 /**
  * Endpoint to provide frontend configuration based on Vercel environment.
  * This allows the frontend to dynamically load Blackbaud public key and payment config.
+ * It also provides the current Vercel environment for display purposes.
  */
 app.get("/api/config", (req, res) => {
-  // BB_PUBLIC_KEY is universal, BB_PAYMENT_CONFIG is environment-specific via Vercel's scoping
+  const environment = process.env.VERCEL_ENV || "development"; // 'development' for local runs
+  const isProduction = environment === "production";
+
   const publicKey = process.env.BB_PUBLIC_KEY;
   const paymentConfig = process.env.BB_PAYMENT_CONFIG; // Vercel's scoping handles PROD vs TEST value
 
   if (!publicKey || !paymentConfig) {
-    console.error(
-      `Missing Blackbaud config for VERCEL_ENV: ${process.env.VERCEL_ENV}`
-    );
+    console.error(`Missing Blackbaud config for VERCEL_ENV: ${environment}`);
     return res.status(500).json({ error: "Missing Blackbaud configuration." });
   }
 
-  res.json({ publicKey, paymentConfig });
+  res.json({ publicKey, paymentConfig, environment }); // Include environment in the response
 });
 
 /**

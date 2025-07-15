@@ -13,6 +13,7 @@ This application enables the Sutton Conservation Commission (SCC) to accept dona
 - Using this access token and the `transactionToken` (which acts as an `authorization_token` for the Payments API), the backend calls the Blackbaud Merchant Services (BBMS) Payments API to complete the transaction.
 - Token refresh is handled automatically by the backend, with the refresh token securely stored in Upstash Redis (Vercel KV), ensuring continuous API access across serverless function invocations.
 - Blackbaud `publicKey` and `paymentConfig` are dynamically provided to the frontend by the backend's `/api/config` endpoint, allowing easy switching between test and production environments via Vercel environment variables.
+- The frontend dynamically displays the current deployment environment (e.g., "Preview Environment") for clarity during testing.
 
 ---
 
