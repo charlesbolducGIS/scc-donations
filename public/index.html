@@ -126,8 +126,9 @@
         }
 
         // Send the transaction token and amount to your backend for processing
-        // The URL below points to your deployed Vercel backend
-        fetch('https://scc-donations-dev.vercel.app/api/payments/v1/checkout/transaction', {
+        // The URL below points to the deployed Vercel backend.
+        // Using a relative path ensures it works for both preview and production deployments.
+        fetch('/api/payments/v1/checkout/transaction', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
