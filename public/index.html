@@ -34,7 +34,7 @@
   <style>
     /* Apply custom font-family to the body */
     body {
-      font-family: 'Roboto', 'Arial', sans-serif;
+      font-family: 'Roboto', 'Arial', 'sans-serif';
     }
   </style>
 </head>
@@ -49,7 +49,7 @@
       <option value="15">$15</option>
       <option value="20">$20</option>
     </select>
-    <button type="submit" id="donate-now" class="bg-primary-blue hover:bg-light-blue text-white-text hover:text-black-text font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline w-full transition duration-150 ease-in-out">
+    <button type="submit" id="donate-now" class="bg-primary-blue hover:bg-light-blue text-white-text hover:text-black-text font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline w-full transition duration-150 ease-in-out" disabled>
       Donate now!
     </button>
 
@@ -69,13 +69,33 @@
       const msgBox = document.getElementById('message-box');
       msgBox.textContent = message;
       msgBox.className = `mt-4 p-3 rounded-md text-sm ${type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'} block`;
-      // Hide the message after 5 seconds
+      // Hide the message after 30 seconds
       setTimeout(() => {
         msgBox.classList.add('hidden');
-      }, 5000);
+      }, 30000);
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', async function () {
+      const donateButton = document.getElementById('donate-now');
+      let publicKey;
+      let paymentConfig;
+
+      // Fetch Blackbaud configuration from the backend
+      try {
+        const response = await fetch('/api/config');
+        if (!response.ok) {
+          throw new Error('Failed to fetch Blackbaud configuration.');
+        }
+        const config = await response.json();
+        publicKey = config.publicKey;
+        paymentConfig = config.paymentConfig;
+        donateButton.disabled = false; // Enable button once config is loaded
+      } catch (error) {
+        console.error('Error loading Blackbaud configuration:', error.message);
+        showMessage('Failed to load payment system configuration. Please try again later.', 'error');
+        return;
+      }
+
       // Ensure the SDK is loaded before using it
       if (typeof Blackbaud_OpenPaymentForm === 'undefined') {
         console.error('BBMS Payments SDK not loaded. Ensure the SDK URL is correct.');
@@ -83,17 +103,10 @@
         return;
       }
 
-      // Blackbaud Checkout Parameters (hardcoded for this development version)
-      // In a more complex production setup, these might be fetched from the backend
-      // or managed via environment variables for greater flexibility.
-      const publicKey = '5c2ca916-d792-4c02-b960-3f5df8c101ab'; // Your Blackbaud Public Key
-      const paymentConfig = '54b73ef8-8b02-4a97-b42d-217ac79c04a0'; // Your Blackbaud TEST Payment Configuration ID
-      //const paymentConfig = '2e7ee4ce-7c2b-4a55-ae00-884c869103ae'; // **CHARGES CARD** Your Blackbaud PRODUCTION Payment Configuration ID
-
       // Create the transaction object
       const transactionData = {
-        key: publicKey,
-        payment_configuration_id: paymentConfig,
+        key: publicKey, // Dynamically loaded
+        payment_configuration_id: paymentConfig, // Dynamically loaded
         'primary_color': '#2A3C64',
         'secondary_color': '#DB9A2C',
         'font_family': 'Roboto, Arial, sans-serif',
@@ -104,7 +117,7 @@
         Amount: document.getElementById('amount').value,
       };
 
-      document.getElementById('donate-now').addEventListener('click', function (e) {
+      donateButton.addEventListener('click', function (e) {
         e.preventDefault(); // Prevent default form submission
 
         // Update the transaction object with the currently selected amount
@@ -126,7 +139,6 @@
         }
 
         // Send the transaction token and amount to your backend for processing
-        // The URL below points to the deployed Vercel backend.
         // Using a relative path ensures it works for both preview and production deployments.
         fetch('/api/payments/v1/checkout/transaction', {
           method: 'POST',
