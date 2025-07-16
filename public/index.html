@@ -80,7 +80,7 @@
 
     document.addEventListener('DOMContentLoaded', async function () {
       const donateButton = document.getElementById('donate-now');
-      const environmentLabel = document.getElementById('environment-label');
+      const environmentLabel = document.getElementById('VercelEnvironment');
       let publicKey;
       let paymentConfig;
       let environment;
@@ -90,9 +90,16 @@
         // const response = await fetch('/api/config');
         const response = await fetch(`${window.location.origin}/api/config`); // Use absolute URL to ensure it works in both preview and production
         if (!response.ok) {
-          throw new Error('Failed to fetch Blackbaud configuration.');
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to fetch Blackbaud configuration.');
         }
         const config = await response.json();
+
+        // Verify all required config values are present
+        if (!config.publicKey || !config.paymentConfig) {
+          throw new Error('Incomplete Blackbaud configuration received from server.');
+        }
+
         publicKey = config.publicKey;
         paymentConfig = config.paymentConfig;
         environment = config.environment; // Get the Vercel environment from the backend
@@ -106,13 +113,16 @@
             environmentLabel.classList.remove('bg-yellow-200', 'text-yellow-800');
             environmentLabel.classList.add('bg-blue-200', 'text-blue-800');
           }
-        } else {
-          environmentLabel.classList.add('hidden'); // Ensure it's hidden in production
         }
 
         donateButton.disabled = false; // Enable button once config is loaded
+        console.log('Configuration loaded successfully:', {
+          environment,
+          hasPublicKey: !!publicKey,
+          hasPaymentConfig: !!paymentConfig,
+        });
       } catch (error) {
-        console.error('Error loading Blackbaud configuration:', error.message);
+        console.error('Error loading Blackbaud configuration:', error);
         showMessage('Failed to load payment system configuration. Please try again later.', 'error');
         return;
       }
@@ -120,7 +130,8 @@
       // Ensure the SDK is loaded before using it
       if (typeof Blackbaud_OpenPaymentForm === 'undefined') {
         console.error('BBMS Payments SDK not loaded. Ensure the SDK URL is correct.');
-        showMessage('Payment system not loaded. Please try again later.', 'error');
+        showMessage(`Configuration error: ${error.message}`, 'error');
+        donateButton.disabled = true;
         return;
       }
 
