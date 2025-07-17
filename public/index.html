@@ -85,10 +85,28 @@
       let paymentConfig;
       let environment;
 
+      // Determine the base URL for API calls based on the current host
+      // This allows the same index.html to work for both production and preview Vercel deployments
+      const currentHost = window.location.host;
+      let apiBaseUrl;
+
+      // Check for specific Vercel preview domain first
+      if (currentHost.includes('scc-donations-dev.vercel.app')) {
+        apiBaseUrl = 'https://scc-donations-dev.vercel.app'; // For the preview environment
+      }
+      // Then check for the production domain
+      else if (currentHost.includes('scc-donations.vercel.app')) {
+        apiBaseUrl = 'https://scc-donations.vercel.app'; // For the production environment
+      }
+      // Fallback for local development or other unexpected hosts (e.g., direct file open)
+      else {
+        apiBaseUrl = window.location.origin;
+        console.warn(`Unexpected host: ${currentHost}. Using window.location.origin as API base URL.`);
+      }
+
       // Fetch Blackbaud configuration and Vercel environment from the backend
       try {
-        // const response = await fetch('/api/config');
-        const response = await fetch(`${window.location.origin}/api/config`); // Use absolute URL to ensure it works in both preview and production
+        const response = await fetch(`${apiBaseUrl}/api/config`);
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.error || 'Failed to fetch Blackbaud configuration.');
@@ -113,6 +131,8 @@
             environmentLabel.classList.remove('bg-yellow-200', 'text-yellow-800');
             environmentLabel.classList.add('bg-blue-200', 'text-blue-800');
           }
+        } else {
+          environmentLabel.classList.add('hidden'); // Ensure it's hidden in production
         }
 
         donateButton.disabled = false; // Enable button once config is loaded
@@ -130,7 +150,7 @@
       // Ensure the SDK is loaded before using it
       if (typeof Blackbaud_OpenPaymentForm === 'undefined') {
         console.error('BBMS Payments SDK not loaded. Ensure the SDK URL is correct.');
-        showMessage(`Configuration error: ${error.message}`, 'error');
+        showMessage(`Payment system SDK not loaded. Please ensure your internet connection is stable and try again.`, 'error');
         donateButton.disabled = true;
         return;
       }
@@ -171,8 +191,7 @@
         }
 
         // Send the transaction token and amount to your backend for processing
-        // Using a relative path ensures it works for both preview and production deployments.
-        fetch('/api/payments/v1/checkout/transaction', {
+        fetch(`${apiBaseUrl}/api/payments/v1/checkout/transaction`, { // Use determined base URL
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

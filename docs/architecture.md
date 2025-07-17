@@ -2,11 +2,11 @@
 
 ## Components
 
-1. **Frontend (CivicPlus Website)**
+1. **Frontend (Vercel-hosted)**
     * **Purpose:** User interface for initiating donations.
     * **Technologies:** HTML, JavaScript, Tailwind CSS (for styling).
     * **Key Integration:** Leverages the **Blackbaud Checkout JavaScript SDK** to securely capture payment information via an embedded iframe and generate a `transactionToken` (no sensitive credit card data touches the frontend).
-    * **Hosting:** Hosted by CivicPlus (on CloudFlare).
+    * **Hosting:** Hosted directly by **Vercel** (as a static site).
 
 2. **Backend (Node.js Server)**
     * **Purpose:** Securely manages communication with Blackbaud SKY API to authorize and process payments, and provides dynamic frontend configuration.
@@ -21,13 +21,14 @@
 
 ## System Flow (High-Level)
 
-1. **User Interaction:** Donor enters donation amount on the Frontend (CivicPlus Website).
+1. **User Interaction:** Donor clicks a link on the `suttonnh.gov` website or scans a QR code at a trailhead, which directs them to the Vercel-hosted donation application.
 2. **Config Fetch:** Frontend makes a request to the Backend's `/api/config` endpoint to retrieve environment-appropriate Blackbaud `publicKey` and `paymentConfig`.
-3. **Checkout Form:** Blackbaud Checkout SDK loads a secure payment iframe for card details.
+3. **Checkout Form:** Blackbaud Checkout SDK loads a secure payment iframe for card details using the dynamically fetched config.
 4. **Token Generation:** Upon successful card entry, Blackbaud generates a `transactionToken` and sends it back to the Frontend.
 5. **Server Communication:** The Frontend sends this `transactionToken` to the Backend (Node.js serverless function on Vercel).
 6. **Payment Processing:** The Backend uses its securely managed OAuth tokens (retrieved from Upstash Redis if needed) and the `transactionToken` to call the BBMS API and complete the donation.
 7. **Confirmation:** Backend sends a response back to the Frontend (e.g., success/failure).
+* (*Future Enhancement: Redirect to a "Thank you" page on the Town website after successful donation*)
 
 ## Maintenance Requirements
 
@@ -37,10 +38,11 @@
     * Monitor API call success/failure rates.
 
 2. **Credentials & Token Management**
-    * Securely store Blackbaud API credentials (including environment-specific `BB_PUBLIC_KEY` and `BB_PAYMENT_CONFIG`) as **Vercel Environment Variables**.
+    * Securely store universal Blackbaud API credentials (`appID`, `appSecret`, `payAPIkey`, `authURL`, `tokenURL`, `BB_PUBLIC_KEY`) as **Vercel Environment Variables** to **All Environments**.
+    * Securely store environment-specific `redirectURL` and `BB_PAYMENT_CONFIG` as **Vercel Environment Variables** scoped to **Production** or **Preview**.
     * The **Upstash Redis (Vercel KV)** instance will securely store and manage the OAuth refresh token.
-    * Implement a strategy for **refreshing OAuth access tokens** automatically before they expire (already handled by `server.js`).
-    * Plan for annual API key rotation (client ID/secret) as a security best practice.
+    * After initial application authorization, the `server.js` backend handles **refreshing OAuth access tokens** automatically before they expire.
+    * Plan for annual API key rotation (`appSecret`, `payAPIkey`) as a security best practice.
     * Maintain Blackbaud organizational authentication for manual authorization/re-authorization when necessary (e.g., initial setup, major scope changes, refresh token invalidation).
 
 3. **Regular Updates**
