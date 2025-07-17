@@ -1,5 +1,5 @@
 {
-  "name": "sccDonationsDev",
+  "name": "sccDonations",
   "version": "1.0.0",
   "main": "server/server.js",
   "scripts": {
