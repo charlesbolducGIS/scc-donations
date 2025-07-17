@@ -188,3 +188,5 @@ If the Apple Pay file is properly hosted, the **Apple Pay** button will appear a
 ## License
 
 This project is licensed under the MIT License.
+
+<!-- Triggering Vercel dev deployment -->
