@@ -212,6 +212,10 @@
           .then((data) => {
             console.log('Server response (success):', data);
             showMessage('Thank you for your donation!', 'success');
+            // Redirect after a short delay to allow message to be seen
+            setTimeout(() => {
+              window.location.href = 'https://www.suttonnh.gov/conservation-commission'; // Redirect to Conservation Commission page
+            }, 2000); // Redirect after 2 seconds
           })
           .catch((error) => {
             console.error('Error sending transaction token to server:', error.message);
