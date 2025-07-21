@@ -38,8 +38,12 @@
     }
   </style>
 </head>
-<body class="bg-white min-h-screen flex items-center justify-center p-4">
+<body class="bg-light-blue min-h-screen flex items-center justify-center p-4">
   <div id="app" class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full border border-gray-200">
+    <div class="text-center mb-4">
+      <img src="/SuttonLogo.png" alt="Town of Sutton Logo" class="mx-auto h-16 w-auto">
+      <h2 class="text-primary-blue text-xl font-semibold mt-2">Sutton Conservation Commission</h2>
+    </div>
     <h1 class="text-primary-blue text-3xl font-bold mb-6 text-center">
       Stewardship Donation Fund
       <span id="VercelEnvironment" class="text-sm bg-yellow-200 text-yellow-800 px-2 py-1 rounded-full ml-2 hidden"></span>
@@ -85,28 +89,9 @@
       let paymentConfig;
       let environment;
 
-      // Determine the base URL for API calls based on the current host
-      // This allows the same index.html to work for both production and preview Vercel deployments
-      const currentHost = window.location.host;
-      let apiBaseUrl;
-
-      // Check for specific Vercel preview domain first
-      if (currentHost.includes('scc-donations-dev.vercel.app')) {
-        apiBaseUrl = 'https://scc-donations-dev.vercel.app'; // For the preview environment
-      }
-      // Then check for the production domain
-      else if (currentHost.includes('scc-donations.vercel.app')) {
-        apiBaseUrl = 'https://scc-donations.vercel.app'; // For the production environment
-      }
-      // Fallback for local development or other unexpected hosts (e.g., direct file open)
-      else {
-        apiBaseUrl = window.location.origin;
-        console.warn(`Unexpected host: ${currentHost}. Using window.location.origin as API base URL.`);
-      }
-
       // Fetch Blackbaud configuration and Vercel environment from the backend
       try {
-        const response = await fetch(`${apiBaseUrl}/api/config`);
+        const response = await fetch('/api/config'); // Use relative path for local development and Vercel deployments
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.error || 'Failed to fetch Blackbaud configuration.');
@@ -191,7 +176,7 @@
         }
 
         // Send the transaction token and amount to your backend for processing
-        fetch(`${apiBaseUrl}/api/payments/v1/checkout/transaction`, { // Use determined base URL
+        fetch('/api/payments/v1/checkout/transaction', { // Use relative path for local development and Vercel deployments)
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -211,11 +196,8 @@
           })
           .then((data) => {
             console.log('Server response (success):', data);
-            showMessage('Thank you for your donation!', 'success');
-            // Redirect after a short delay to allow message to be seen
-            setTimeout(() => {
-              window.location.href = 'https://www.suttonnh.gov/conservation-commission'; // Redirect to Conservation Commission page
-            }, 2000); // Redirect after 2 seconds
+            const amount = document.getElementById('amount').value;
+            window.location.href = `/thankyou.html?amount=${amount}&status=${data.status}`; // Redirect to thank you page with amount and status
           })
           .catch((error) => {
             console.error('Error sending transaction token to server:', error.message);

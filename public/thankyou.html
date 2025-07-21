@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thank You for Your Donation!</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'primary-blue': '#2A3C64',
+            'light-blue': '#E0E8F8',
+            'white-text': '#ffffff',
+            'black-text': '#000000',
+          },
+          fontFamily: {
+            roboto: ['Roboto', 'Arial', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Roboto', 'Arial', 'sans-serif';
+    }
+  </style>
+</head>
+<body class="bg-light-blue min-h-screen flex items-center justify-center p-4">
+
+  <div id="app" class="bg-white p-8 rounded-lg shadow-lg max-w-lg w-full text-center">
+    <h1 class="text-primary-blue text-3xl font-bold mb-4">Thank You! 🎉</h1>
+    
+    <p id="donation-message" class="text-primary-blue text-lg mb-6">
+      Your generous donation is greatly appreciated.
+    </p>
+
+    <p class="text-sm text-gray-600 mb-6">
+      Your contribution directly supports the stewardship of properties managed by the Sutton Conservation Commission.
+    </p>
+
+    <a href="https://www.suttonnh.gov/conservation-commission" class="bg-primary-blue hover:bg-light-blue text-white-text hover:text-black-text font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline w-full transition duration-150 ease-in-out inline-block">
+      Return to the Conservation Commission Page
+    </a>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Get the URL parameters
+      const params = new URLSearchParams(window.location.search);
+      const amount = params.get('amount');
+      const status = params.get('status');
+
+      const messageElement = document.getElementById('donation-message');
+
+      // Update the message if the amount is available
+      if (amount && status && status.toLowerCase() === 'approved') {
+        messageElement.textContent = `Thank you for your generous donation of $${amount}!`;
+      }
+    });
+  </script>
+
+</body>
+</html>
