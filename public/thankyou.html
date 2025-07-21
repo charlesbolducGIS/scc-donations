@@ -47,21 +47,20 @@
     </a>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Get the URL parameters
-      const params = new URLSearchParams(window.location.search);
-      const amount = params.get('amount');
-      const status = params.get('status');
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Get the URL parameters
+    const params = new URLSearchParams(window.location.search);
+    const amount = params.get('amount');
+    const state = params.get('state'); // Get 'state' from the URL
 
-      const messageElement = document.getElementById('donation-message');
+    const messageElement = document.getElementById('donation-message');
 
-      // Update the message if the amount is available
-      if (amount && status && status.toLowerCase() === 'approved') {
-        messageElement.textContent = `Thank you for your generous donation of $${amount}!`;
-      }
-    });
-  </script>
-
+    // Check if the amount exists and the state is 'Processed'
+    if (amount && state && state.toLowerCase() === 'processed') {
+      messageElement.textContent = `Thank you for your generous donation of $${amount}!`;
+    }
+  });
+</script>
 </body>
 </html>

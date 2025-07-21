@@ -197,7 +197,7 @@
           .then((data) => {
             console.log('Server response (success):', data);
             const amount = document.getElementById('amount').value;
-            window.location.href = `/thankyou.html?amount=${amount}&status=${data.status}`; // Redirect to thank you page with amount and status
+            window.location.href = `/thankyou.html?amount=${amount}&state=${data.state}`; // Redirect to thank you page with amount and status
           })
           .catch((error) => {
             console.error('Error sending transaction token to server:', error.message);
