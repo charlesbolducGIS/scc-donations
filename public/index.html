@@ -146,7 +146,7 @@
         payment_configuration_id: paymentConfig, // Dynamically loaded
         'primary_color': '#2A3C64',
         'secondary_color': '#DB9A2C',
-        'font_family': 'Roboto, Arial, sans-serif',
+        'font_family': 'Roboto, Arial',
         'font_color': '#ffffff',
         'client_app_name': 'Sutton ConCom Stewardship Donations App',
         'use_apple_pay': 'true',
@@ -167,8 +167,7 @@
       // Listen for the checkoutComplete event from the Blackbaud SDK
       document.addEventListener('checkoutComplete', function (e) {
         const transactionToken = e.detail?.transactionToken;
-        const selectedAmount = document.getElementById('amount').value;
-
+        
         if (!transactionToken) {
           console.error('Transaction token is missing from Blackbaud SDK response.');
           showMessage('Payment failed: Missing transaction details. Please try again.', 'error');
@@ -183,7 +182,7 @@
           },
           body: JSON.stringify({
             transactionToken: transactionToken,
-            amount: selectedAmount,
+            amount: document.getElementById('amount').value, // Still send selected amount for backend context
           }),
         })
           .then((response) => {
@@ -196,8 +195,17 @@
           })
           .then((data) => {
             console.log('Server response (success):', data);
-            const amount = document.getElementById('amount').value;
-            window.location.href = `/thankyou.html?amount=${amount}&state=${data.state}`; // Redirect to thank you page with amount and status
+            // Pass transaction details to the thank you page
+            const params = new URLSearchParams();
+            params.append('amount', (data.amount / 100).toFixed(2)); // Convert cents to dollars
+            params.append('cardType', data.credit_card?.card_type || 'N/A');
+            params.append('lastFour', data.credit_card?.last_four || 'N/A');
+            params.append('transactionDate', data.transaction_date || 'N/A');
+            params.append('orderId', data.id || 'N/A');
+            params.append('email', data.email_address || 'N/A');
+            params.append('donorName', data.credit_card?.name || 'Valued Donor'); // Use credit_card.name for donor name
+
+            window.location.href = `/thankyou.html?${params.toString()}`; 
           })
           .catch((error) => {
             console.error('Error sending transaction token to server:', error.message);

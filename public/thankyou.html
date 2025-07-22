@@ -15,6 +15,7 @@
             'light-blue': '#E0E8F8',
             'white-text': '#ffffff',
             'black-text': '#000000',
+            'accent-orange': '#DB9A2C', // Ensure accent-orange is defined for the button
           },
           fontFamily: {
             roboto: ['Roboto', 'Arial', 'sans-serif'],
@@ -27,39 +28,97 @@
     body {
       font-family: 'Roboto', 'Arial', 'sans-serif';
     }
+    /* Styles for print button */
+    @media print {
+      .no-print {
+        display: none;
+      }
+    }
   </style>
 </head>
 <body class="bg-light-blue min-h-screen flex items-center justify-center p-4">
 
   <div id="app" class="bg-white p-8 rounded-lg shadow-lg max-w-lg w-full text-center">
-    <h1 class="text-primary-blue text-3xl font-bold mb-4">Thank You! 🎉</h1>
+    <div class="text-center mb-4">
+      <img src="/SuttonLogo.png" alt="Town of Sutton Logo" class="mx-auto h-16 w-auto">
+      <h2 class="text-primary-blue text-xl font-semibold mt-2">Sutton Conservation Commission</h2>
+    </div>
+    <h1 class="text-primary-blue text-3xl font-bold mb-4">Thank You!</h1>
     
-    <p id="donation-message" class="text-primary-blue text-lg mb-6">
-      Your generous donation is greatly appreciated.
+    <p id="donation-greeting" class="text-primary-blue text-lg mb-6">
+      Dear Valued Donor, <br>
+      Thank you for your generous donation to the Stewardship Fund!
     </p>
+
+    <div id="transaction-details" class="text-left text-primary-blue mb-6 border-t border-b border-gray-200 py-4 hidden">
+      <h3 class="font-bold text-xl mb-2">Donation Confirmation:</h3>
+      <p><span class="font-semibold">Amount:</span> <span id="detail-amount"></span></p>
+      <p><span class="font-semibold">Account Type:</span> <span id="detail-card-type"></span></p>
+      <p><span class="font-semibold">Account (Last Four):</span> <span id="detail-last-four"></span></p>
+      <p><span class="font-semibold">Date:</span> <span id="detail-date"></span></p>
+      <p><span class="font-semibold">Order ID:</span> <span id="detail-order-id"></span></p>
+      <p><span class="font-semibold">Email:</span> <span id="detail-email"></span></p>
+      <p class="mt-4 text-sm text-gray-600">
+        Please print this page for your records.
+      </p>
+    </div>
 
     <p class="text-sm text-gray-600 mb-6">
-      Your contribution directly supports the stewardship of properties managed by the Sutton Conservation Commission.
+      Your contribution directly supports the management, improvement, maintenance and stewardship of Sutton Conservation Commission managed properties.
+      Both the interest and the principal of this donation may be spent as the Conservation Commission deems to be appropriate.
+    </p>
+    <p class="text-sm italic text-gray-600 mb-6">
+      No goods or services were provided in return for your contribution.
     </p>
 
-    <a href="https://www.suttonnh.gov/conservation-commission" class="bg-primary-blue hover:bg-light-blue text-white-text hover:text-black-text font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline w-full transition duration-150 ease-in-out inline-block">
+    <button id="print-button" class="bg-accent-orange hover:bg-primary-blue text-white-text hover:text-white-text font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline w-full mt-4 transition duration-150 ease-in-out no-print">
+      Print This Page
+    </button>
+    
+    <a href="https://www.suttonnh.gov/conservation-commission" class="bg-primary-blue hover:bg-light-blue text-white-text hover:text-black-text font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline w-full transition duration-150 ease-in-out inline-block mt-4 no-print">
       Return to the Conservation Commission Page
     </a>
   </div>
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    // Get the URL parameters
     const params = new URLSearchParams(window.location.search);
+    const donationGreeting = document.getElementById('donation-greeting');
+    const detailsContainer = document.getElementById('transaction-details');
+    const printButton = document.getElementById('print-button');
+
+    // Get parameters from URL
     const amount = params.get('amount');
-    const state = params.get('state'); // Get 'state' from the URL
+    const cardType = params.get('cardType');
+    const lastFour = params.get('lastFour');
+    const transactionDate = params.get('transactionDate');
+    const orderId = params.get('orderId');
+    const email = params.get('email');
+    const donorName = params.get('donorName'); // Get donor name
 
-    const messageElement = document.getElementById('donation-message');
+    if (amount) { // Check if at least amount is present to indicate a valid transaction
+      // Update greeting
+      donationGreeting.innerHTML = `Dear ${donorName}, <br> Thank you for your generous donation of $${amount} USD to the Stewardship Fund!`;
 
-    // Check if the amount exists and the state is 'Processed'
-    if (amount && state && state.toLowerCase() === 'processed') {
-      messageElement.textContent = `Thank you for your generous donation of $${amount}!`;
+      // Populate details
+      document.getElementById('detail-amount').textContent = `$${amount} USD`;
+      document.getElementById('detail-card-type').textContent = cardType;
+      document.getElementById('detail-last-four').textContent = `**********${lastFour}`;
+      document.getElementById('detail-date').textContent = transactionDate;
+      document.getElementById('detail-order-id').textContent = orderId;
+      document.getElementById('detail-email').textContent = email;
+
+      detailsContainer.classList.remove('hidden'); // Show details section
+    } else {
+      // Fallback message if no transaction data is found
+      donationGreeting.textContent = 'Thank you for your donation!';
+      detailsContainer.classList.add('hidden'); // Hide details if no data
     }
+
+    // Print button functionality
+    printButton.addEventListener('click', function() {
+      window.print();
+    });
   });
 </script>
 </body>

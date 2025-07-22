@@ -148,22 +148,22 @@ app.get("/api/config", (req, res) => {
   const publicKey = process.env.BB_PUBLIC_KEY;
   const paymentConfig = process.env.BB_PAYMENT_CONFIG; // Vercel's scoping handles PROD vs TEST value
 
-  console.log("Config request received:", {
+  console.log('Config request received:', {
     environment,
     isProduction,
     hasPublicKey: !!publicKey,
     hasPaymentConfig: !!paymentConfig,
-    requestHeaders: req.headers,
+    requestHeaders: req.headers
   });
 
   if (!publicKey || !paymentConfig) {
     console.error(`Missing Blackbaud config for VERCEL_ENV: ${environment}`, {
       publicKey: !!publicKey,
-      paymentConfig: !!paymentConfig,
+      paymentConfig: !!paymentConfig
     });
     return res.status(500).json({
       error: "Missing Blackbaud configuration.",
-      environment,
+      environment
     });
   }
 
@@ -171,7 +171,7 @@ app.get("/api/config", (req, res) => {
   console.log("Sending config to frontend:", {
     ...config,
     publicKeyLength: publicKey.length,
-    paymentConfigLength: paymentConfig.length,
+    paymentConfigLength: paymentConfig.length
   });
 
   res.json(config);
@@ -221,7 +221,7 @@ app.post("/api/payments/v1/checkout/transaction", async (req, res) => {
       }
     );
     console.log("Blackbaud transaction successfully processed.");
-    res.json(response.data); // Send Blackbaud's response back to the frontend
+    res.json(response.data); // Send Blackbaud's full response data back to the frontend
   } catch (err) {
     console.error(
       "Error completing checkout transaction:",
