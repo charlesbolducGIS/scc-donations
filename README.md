@@ -14,6 +14,7 @@ This application enables the Sutton Conservation Commission (SCC) to accept dona
 - Using this access token and the `transactionToken` (which acts as an `authorization_token` for the Payments API), the backend calls the Blackbaud Merchant Services (BBMS) Payments API to complete the transaction.
 - Token refresh is handled automatically by the backend, with the refresh token securely stored in Upstash Redis (Vercel KV), ensuring continuous API access across serverless function invocations.
 - The frontend dynamically displays the current deployment environment (e.g., "Preview Environment") for clarity during testing.
+- After a successful donation, the user is redirected to a dedicated "Thank You" page (`public/thankyou.html`) which displays the donation amount and provides a link back to the Conservation Commission website.
 
 ---
 
@@ -172,9 +173,9 @@ To display Apple Pay, Apple requires you to host a file to validate merchant dom
 2. Unzip the folder and host the Apple Pay file publicly in the domain where your organization launches its Blackbaud Checkout form. The complete file path should look like `[top-level domain]/.well-known/apple-developer-merchantid-domain-association`.
 3. Repeat the previous step for any domains or subdomains where Apple Pay should appear. For example, the Apple Pay file path for `https://domainexample.com/donation/page.html` is `https://domainexample.com/.well-known/apple-developer-merchantid-domain-association`.
 
-Apple Pay is enabled in `/public/index.html` where the `transactionData` object is created.
-
-If the Apple Pay file is properly hosted, the **Apple Pay** button will appear automatically in the BBMS Checkout form for supported browsers/devices.
+**No Code Changes Needed**
+- Apple Pay is enabled in `/public/index.html` where the `transactionData` object is created.
+- If the Apple Pay file is properly hosted, the **Apple Pay** button will appear automatically in the BBMS Checkout form for supported browsers/devices.
 
 ---
 
@@ -188,5 +189,3 @@ If the Apple Pay file is properly hosted, the **Apple Pay** button will appear a
 ## License
 
 This project is licensed under the MIT License.
-
-<!-- Triggering Vercel dev deployment -->

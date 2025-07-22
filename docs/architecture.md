@@ -5,6 +5,9 @@
 1. **Frontend (Vercel-hosted)**
     * **Purpose:** User interface for initiating donations.
     * **Technologies:** HTML, JavaScript, Tailwind CSS (for styling).
+    * **Key Files:**
+        * `public/index.html`: The main donation form, including the Sutton Conservation Commission logo and branding.
+        * `public/thankyou.html`: A dedicated page displayed after a successful donation, showing the amount and providing a link back to the main Conservation Commission website.
     * **Key Integration:** Leverages the **Blackbaud Checkout JavaScript SDK** to securely capture payment information via an embedded iframe and generate a `transactionToken` (no sensitive credit card data touches the frontend).
     * **Hosting:** Hosted directly by **Vercel** (as a static site).
 
@@ -27,8 +30,7 @@
 4. **Token Generation:** Upon successful card entry, Blackbaud generates a `transactionToken` and sends it back to the Frontend.
 5. **Server Communication:** The Frontend sends this `transactionToken` to the Backend (Node.js serverless function on Vercel).
 6. **Payment Processing:** The Backend uses its securely managed OAuth tokens (retrieved from Upstash Redis if needed) and the `transactionToken` to call the BBMS API and complete the donation.
-7. **Confirmation:** Backend sends a response back to the Frontend (e.g., success/failure).
-* (*Future Enhancement: Redirect to a "Thank you" page on the Town website after successful donation*)
+7. **Confirmation & Redirect:** Upon successful payment, the Frontend redirects the user to the `public/thankyou.html` page, passing the donation amount and transaction status. This page provides a confirmation message and a link back to the main Conservation Commission website.
 
 ## Maintenance Requirements
 
