@@ -1,20 +1,24 @@
 {
-  "name": "sccDonations",
-  "version": "1.0.0",
+  "name": "scc-donations",
+  "version": "1.0.1",
   "main": "server/server.js",
   "scripts": {
     "start": "node server/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "blackbaud",
+    "express",
+    "vercel"
+  ],
+  "author": "Anorthosite GeoSpatial LLC",
   "license": "ISC",
-  "description": "",
+  "description": "Secure Blackbaud Donation processing using Vercel Serverless Functions.",
   "dependencies": {
-    "@upstash/redis": "^1.35.1",
-    "axios": "^1.8.4",
+    "@upstash/redis": "^1.35.3",
+    "axios": "^1.9.0",
     "dotenv": "^16.4.7",
-    "express": "^4.21.2",
+    "express": "^4.21.3",
     "jsonwebtoken": "^9.0.2",
     "simple-oauth2": "^5.1.0"
   }
