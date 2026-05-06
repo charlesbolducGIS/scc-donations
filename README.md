@@ -185,6 +185,8 @@ To display Apple Pay, Apple requires you to host a file to validate merchant dom
 
 - All sensitive credentials are kept on the backend via Vercel Environment Variables.
 - The backend automatically refreshes tokens as needed, stored persistently in Upstash Redis.
+- A Vercel Cron Job fires every Monday at noon UTC (`GET /api/cron-ping`) to keep the Upstash Redis database active on the free tier. This endpoint requires a `CRON_SECRET` environment variable set in Vercel (Production only).
+- The donation form detects its deployment environment (Development/Preview/Production) immediately from the browser hostname, so the environment badge appears instantly without waiting for the backend config fetch.
 
 ---
 

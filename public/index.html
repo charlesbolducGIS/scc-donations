@@ -87,42 +87,40 @@
       const environmentLabel = document.getElementById('VercelEnvironment');
       let publicKey;
       let paymentConfig;
-      let environment;
 
-      // Fetch Blackbaud configuration and Vercel environment from the backend
+      // Detect environment immediately from hostname — no backend call needed
+      const hostname = window.location.hostname;
+      if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        environmentLabel.textContent = 'Development Environment';
+        environmentLabel.classList.remove('hidden', 'bg-yellow-200', 'text-yellow-800');
+        environmentLabel.classList.add('bg-blue-200', 'text-blue-800');
+      } else if (hostname.endsWith('.vercel.app')) {
+        environmentLabel.textContent = 'Preview Environment';
+        environmentLabel.classList.remove('hidden');
+      }
+
+      // Show loading state on button while fetching config
+      donateButton.textContent = 'Loading payment system...';
+
+      // Fetch Blackbaud configuration from the backend
       try {
-        const response = await fetch('/api/config'); // Use relative path for local development and Vercel deployments
+        const response = await fetch('/api/config');
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.error || 'Failed to fetch Blackbaud configuration.');
         }
         const config = await response.json();
 
-        // Verify all required config values are present
         if (!config.publicKey || !config.paymentConfig) {
           throw new Error('Incomplete Blackbaud configuration received from server.');
         }
 
         publicKey = config.publicKey;
         paymentConfig = config.paymentConfig;
-        environment = config.environment; // Get the Vercel environment from the backend
 
-        // Display environment label if not production
-        if (environment && environment !== 'production') {
-          environmentLabel.textContent = `${environment.charAt(0).toUpperCase() + environment.slice(1)} Environment`;
-          environmentLabel.classList.remove('hidden');
-          // Optional: Change color for development environment if needed
-          if (environment === 'development') {
-            environmentLabel.classList.remove('bg-yellow-200', 'text-yellow-800');
-            environmentLabel.classList.add('bg-blue-200', 'text-blue-800');
-          }
-        } else {
-          environmentLabel.classList.add('hidden'); // Ensure it's hidden in production
-        }
-
-        donateButton.disabled = false; // Enable button once config is loaded
+        donateButton.textContent = 'Donate now!';
+        donateButton.disabled = false;
         console.log('Configuration loaded successfully:', {
-          environment,
           hasPublicKey: !!publicKey,
           hasPaymentConfig: !!paymentConfig,
         });

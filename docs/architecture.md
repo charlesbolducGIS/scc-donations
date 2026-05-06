@@ -32,6 +32,13 @@
 6. **Payment Processing:** The Backend uses its securely managed OAuth tokens (retrieved from Upstash Redis if needed) and the `transactionToken` to call the BBMS API and complete the donation.
 7. **Confirmation & Redirect:** Upon successful payment, the Frontend redirects the user to the `public/thankyou.html` page, passing the donation amount and transaction status. This page provides a confirmation message and a link back to the main Conservation Commission website.
 
+## Scheduled Jobs
+
+1. **Upstash Keep-Alive (`GET /api/cron-ping`)**
+    * Runs every Monday at noon UTC via Vercel Cron (defined in `vercel.json`).
+    * Performs a lightweight Redis read to prevent the Upstash free-tier database from being deleted after 30 days of inactivity.
+    * Protected by a `CRON_SECRET` environment variable (Production only). External callers without the header receive a 401.
+
 ## Maintenance Requirements
 
 1. **Server Monitoring**
