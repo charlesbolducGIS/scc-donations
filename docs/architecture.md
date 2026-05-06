@@ -48,7 +48,7 @@
     * Maintain Blackbaud organizational authentication for manual authorization/re-authorization when necessary (e.g., initial setup, major scope changes, refresh token invalidation).
 
 3. **Regular Updates**
-    * Apply Node.js security updates.
-    * Regularly update npm packages (including `@upstash/redis`, `axios`, `express`) to patch vulnerabilities and leverage improvements.
+    * Apply Node.js security updates. Supported versions are pinned in `package.json` under `"engines"` (20.x, 22.x, or 24.x).
+    * Regularly run `npm audit` and `npm audit fix` to patch vulnerabilities. Key packages to monitor: `@upstash/redis`, `axios`, `express`.
     * Monitor Vercel platform updates and Upstash Redis service announcements.
     * Monitor Blackbaud API updates and deprecations.
