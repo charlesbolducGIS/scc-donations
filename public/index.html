@@ -88,13 +88,15 @@
       let publicKey;
       let paymentConfig;
 
-      // Detect environment immediately from hostname — no backend call needed
+      // Detect environment immediately from hostname — no backend call needed.
+      // Production hostname is scc-donations.vercel.app; all other .vercel.app
+      // hostnames are preview deployments.
       const hostname = window.location.hostname;
       if (hostname === 'localhost' || hostname === '127.0.0.1') {
         environmentLabel.textContent = 'Development Environment';
         environmentLabel.classList.remove('hidden', 'bg-yellow-200', 'text-yellow-800');
         environmentLabel.classList.add('bg-blue-200', 'text-blue-800');
-      } else if (hostname.endsWith('.vercel.app')) {
+      } else if (hostname.endsWith('.vercel.app') && hostname !== 'scc-donations.vercel.app') {
         environmentLabel.textContent = 'Preview Environment';
         environmentLabel.classList.remove('hidden');
       }
