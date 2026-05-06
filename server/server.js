@@ -142,39 +142,23 @@ app.use(express.static(path.join(__dirname, "..", "public")));
  * It also provides the current Vercel environment for display purposes.
  */
 app.get("/api/config", (req, res) => {
-  const environment = process.env.VERCEL_ENV || "development"; // 'development' for local runs
-  const isProduction = environment === "production";
-
   const publicKey = process.env.BB_PUBLIC_KEY;
-  const paymentConfig = process.env.BB_PAYMENT_CONFIG; // Vercel's scoping handles PROD vs TEST value
+  const paymentConfig = process.env.BB_PAYMENT_CONFIG;
 
   console.log('Config request received:', {
-    environment,
-    isProduction,
     hasPublicKey: !!publicKey,
     hasPaymentConfig: !!paymentConfig,
-    requestHeaders: req.headers
   });
 
   if (!publicKey || !paymentConfig) {
-    console.error(`Missing Blackbaud config for VERCEL_ENV: ${environment}`, {
+    console.error("Missing Blackbaud config", {
       publicKey: !!publicKey,
       paymentConfig: !!paymentConfig
     });
-    return res.status(500).json({
-      error: "Missing Blackbaud configuration.",
-      environment
-    });
+    return res.status(500).json({ error: "Missing Blackbaud configuration." });
   }
 
-  const config = { publicKey, paymentConfig, environment };
-  console.log("Sending config to frontend:", {
-    ...config,
-    publicKeyLength: publicKey.length,
-    paymentConfigLength: paymentConfig.length
-  });
-
-  res.json(config);
+  res.json({ publicKey, paymentConfig });
 });
 
 /**
@@ -233,6 +217,14 @@ app.post("/api/payments/v1/checkout/transaction", async (req, res) => {
       details: "Please try again or contact support.", // More user-friendly detail
     });
   }
+});
+
+app.get("/api/cron-ping", async (req, res) => {
+  if (req.headers["x-cron-secret"] !== process.env.CRON_SECRET) {
+    return res.status(401).end();
+  }
+  await redis.get(REFRESH_TOKEN_KEY);
+  res.status(200).end();
 });
 
 /**

@@ -28,65 +28,124 @@
     body {
       font-family: 'Roboto', 'Arial', 'sans-serif';
     }
-    /* Styles for print button */
     @media print {
+      @page {
+        margin: 0.5in;
+      }
+      body > *:not(.print-receipt) {
+        display: none !important;
+      }
+      body {
+        background-color: white !important;
+        font-size: 9pt !important;
+      }
+      .print-receipt {
+        width: auto !important;
+        max-width: none !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+        page-break-inside: avoid;
+      }
       .no-print {
-        display: none;
+        display: none !important;
+      }
+      .text-center-print-override {
+        text-align: left !important;
+      }
+      #detailsContainer {
+        padding: 3mm !important;
+        margin-bottom: 3mm !important;
+      }
+      #detailsContainer > * + * {
+        margin-top: 3px !important;
       }
     }
   </style>
 </head>
-<body class="bg-light-blue min-h-screen flex items-center justify-center p-4">
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
 
-  <div id="app" class="bg-white p-8 rounded-lg shadow-lg max-w-lg w-full text-center">
-    <div class="text-center mb-4">
-      <img src="/SuttonLogo.png" alt="Town of Sutton Logo" class="mx-auto h-16 w-auto">
-      <h2 class="text-primary-blue text-xl font-semibold mt-2">Sutton Conservation Commission</h2>
-    </div>
-    <h1 class="text-primary-blue text-3xl font-bold mb-4">Thank You!</h1>
+  <div class="max-w-md w-full bg-white p-8 rounded-xl shadow-2xl text-center print-receipt">
     
-    <p id="donation-greeting" class="text-primary-blue text-lg mb-6">
-      Dear Valued Donor, <br>
+    <svg class="w-16 h-16 mx-auto mb-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    </svg>
+
+    <h1 class="text-3xl font-extrabold text-primary-blue mb-4">Donation Complete!</h1>
+
+    <!-- Donation Greeting/Message -->
+    <p id="donationGreeting" class="text-lg text-gray-700 mb-6 leading-relaxed text-center-print-override">
       Thank you for your generous donation to the Stewardship Fund!
     </p>
 
-    <div id="transaction-details" class="text-left text-primary-blue mb-6 border-t border-b border-gray-200 py-4 hidden">
-      <h3 class="font-bold text-xl mb-2">Donation Confirmation:</h3>
-      <p><span class="font-semibold">Amount:</span> <span id="detail-amount"></span></p>
-      <p><span class="font-semibold">Account Type:</span> <span id="detail-card-type"></span></p>
-      <p><span class="font-semibold">Account (Last Four):</span> <span id="detail-last-four"></span></p>
-      <p><span class="font-semibold">Date:</span> <span id="detail-date"></span></p>
-      <p><span class="font-semibold">Order ID:</span> <span id="detail-order-id"></span></p>
-      <p><span class="font-semibold">Email:</span> <span id="detail-email"></span></p>
-      <p class="mt-4 text-sm text-gray-600">
-        Please print this page for your records.
-      </p>
+    <!-- Donation Details (Receipt Section) -->
+    <div id="detailsContainer" class="bg-gray-50 p-6 rounded-lg space-y-3 mb-6 border border-gray-200 text-sm text-black-text hidden text-center-print-override">
+      <h2 class="text-xl font-bold text-primary-blue border-b pb-2 mb-4 text-center">Receipt Details</h2>
+      
+      <div class="flex justify-between border-b border-dashed pb-1">
+        <span class="font-semibold">Fund:</span>
+        <span>SCC Stewardship Fund</span>
+      </div>
+      
+      <div class="flex justify-between border-b border-dashed pb-1">
+        <span class="font-semibold">Transaction Date:</span>
+        <span id="detail-date"></span>
+      </div>
+      
+      <div class="flex justify-between border-b border-dashed pb-1">
+        <span class="font-semibold">Order ID:</span>
+        <span id="detail-order-id"></span>
+      </div>
+
+      <div class="flex justify-between border-b border-dashed pb-1">
+        <span class="font-semibold">Donor Name:</span>
+        <span id="detail-donor-name"></span>
+      </div>
+
+      <div class="flex justify-between border-b border-dashed pb-1">
+        <span class="font-semibold">Email:</span>
+        <span id="detail-email"></span>
+      </div>
+      
+      <div class="flex justify-between border-b border-dashed pb-1">
+        <span class="font-semibold">Payment Method:</span>
+        <span id="detail-card-type"></span>
+      </div>
+
+      <div class="flex justify-between border-b border-dashed pb-1">
+        <span class="font-semibold">Card (Last 4):</span>
+        <span id="detail-last-four"></span>
+      </div>
+
+      <div class="pt-2 flex justify-between text-lg font-bold text-primary-blue">
+        <span>Amount Paid:</span>
+        <span id="detail-amount"></span>
+      </div>
+
+      <p class="text-xs text-center text-gray-500 pt-4">Your support helps conserve land and water resources in Sutton, NH.</p>
+
     </div>
 
-    <p class="text-sm text-gray-600 mb-6">
-      Your contribution directly supports the management, improvement, maintenance and stewardship of Sutton Conservation Commission managed properties.
-      Both the interest and the principal of this donation may be spent as the Conservation Commission deems to be appropriate.
-    </p>
-    <p class="text-sm italic text-gray-600 mb-6">
-      No goods or services were provided in return for your contribution.
-    </p>
+    <!-- Actions (Hidden on Print) -->
+    <div class="space-y-3 no-print">
+        <button id="printReceipt" class="w-full bg-accent-orange hover:bg-black-text text-white-text font-bold py-2 rounded-lg shadow transition duration-200">
+          Print Receipt / Confirmation
+        </button>
+        <a href="https://www.suttonnh.gov/conservation-commission" class="block w-full text-primary-blue hover:text-accent-orange py-2 rounded-lg transition duration-200 border border-primary-blue hover:border-accent-orange font-semibold">
+          Return to SCC Page
+        </a>
+    </div>
 
-    <button id="print-button" class="bg-accent-orange hover:bg-primary-blue text-white-text hover:text-white-text font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline w-full mt-4 transition duration-150 ease-in-out no-print">
-      Print This Page
-    </button>
-    
-    <a href="https://www.suttonnh.gov/conservation-commission" class="bg-primary-blue hover:bg-light-blue text-white-text hover:text-black-text font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline w-full transition duration-150 ease-in-out inline-block mt-4 no-print">
-      Return to the Conservation Commission Page
-    </a>
   </div>
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     const params = new URLSearchParams(window.location.search);
-    const donationGreeting = document.getElementById('donation-greeting');
-    const detailsContainer = document.getElementById('transaction-details');
-    const printButton = document.getElementById('print-button');
-
+    const donationGreeting = document.getElementById('donationGreeting');
+    const detailsContainer = document.getElementById('detailsContainer');
+    const printButton = document.getElementById('printReceipt');
+    
     // Get parameters from URL
     const amount = params.get('amount');
     const cardType = params.get('cardType');
@@ -94,9 +153,10 @@
     const transactionDate = params.get('transactionDate');
     const orderId = params.get('orderId');
     const email = params.get('email');
-    const donorName = params.get('donorName'); // Get donor name
+    const donorName = params.get('donorName') || 'Valued Donor'; // Default to Valued Donor if not passed
 
-    if (amount) { // Check if at least amount is present to indicate a valid transaction
+    // Check if at least amount is present to indicate a valid transaction
+    if (amount) { 
       // Update greeting
       donationGreeting.innerHTML = `Dear ${donorName}, <br> Thank you for your generous donation of $${amount} USD to the Stewardship Fund!`;
 
@@ -107,17 +167,21 @@
       document.getElementById('detail-date').textContent = transactionDate;
       document.getElementById('detail-order-id').textContent = orderId;
       document.getElementById('detail-email').textContent = email;
+      document.getElementById('detail-donor-name').textContent = donorName; // Populate donor name
 
       detailsContainer.classList.remove('hidden'); // Show details section
     } else {
       // Fallback message if no transaction data is found
-      donationGreeting.textContent = 'Thank you for your donation!';
+      donationGreeting.textContent = 'Thank you for your donation! No specific transaction details were found.';
       detailsContainer.classList.add('hidden'); // Hide details if no data
     }
 
     // Print button functionality
     printButton.addEventListener('click', function() {
-      window.print();
+      // Small timeout to ensure browser applies print styles before printing
+      setTimeout(() => {
+        window.print();
+      }, 50);
     });
   });
 </script>
