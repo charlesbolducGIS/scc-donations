@@ -219,12 +219,22 @@ app.post("/api/payments/v1/checkout/transaction", async (req, res) => {
   }
 });
 
+/**
+ * Weekly Vercel Cron keep-alive for the Upstash free tier.
+ * Vercel sends CRON_SECRET as "Authorization: Bearer <secret>"; reject everything if it's unset.
+ */
 app.get("/api/cron-ping", async (req, res) => {
-  if (req.headers["x-cron-secret"] !== process.env.CRON_SECRET) {
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret || req.headers.authorization !== `Bearer ${cronSecret}`) {
     return res.status(401).end();
   }
-  await redis.get(REFRESH_TOKEN_KEY);
-  res.status(200).end();
+  try {
+    await redis.get(REFRESH_TOKEN_KEY);
+    res.status(200).end();
+  } catch (error) {
+    console.error("Cron keep-alive Redis read failed:", error.message);
+    res.status(500).end();
+  }
 });
 
 /**
