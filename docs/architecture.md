@@ -37,7 +37,7 @@
 1. **Upstash Keep-Alive (`GET /api/cron-ping`)**
     * Runs every Monday at noon UTC via Vercel Cron (defined in `vercel.json`).
     * Performs a lightweight Redis read to prevent the Upstash free-tier database from being deleted after 30 days of inactivity.
-    * Protected by a `CRON_SECRET` environment variable (Production only). External callers without the header receive a 401.
+    * Protected by a `CRON_SECRET` environment variable (Production only). Vercel sends it automatically as an `Authorization: Bearer <CRON_SECRET>` header; any request without a matching header (or any request when `CRON_SECRET` is unset) receives a 401.
 
 ## Maintenance Requirements
 
@@ -55,7 +55,7 @@
     * Maintain Blackbaud organizational authentication for manual authorization/re-authorization when necessary (e.g., initial setup, major scope changes, refresh token invalidation).
 
 3. **Regular Updates**
-    * Apply Node.js security updates. Supported versions are pinned in `package.json` under `"engines"` (20.x, 22.x, or 24.x).
+    * Apply Node.js security updates. Supported versions are pinned in `package.json` under `"engines"` (22.x or 24.x). Node.js 20.x reached end-of-life and no longer receives security fixes.
     * Regularly run `npm audit` and `npm audit fix` to patch vulnerabilities. Key packages to monitor: `@upstash/redis`, `axios`, `express`.
     * Monitor Vercel platform updates and Upstash Redis service announcements.
     * Monitor Blackbaud API updates and deprecations.

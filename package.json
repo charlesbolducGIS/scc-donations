@@ -15,14 +15,12 @@
   "license": "ISC",
   "description": "Secure Blackbaud Donation processing using Vercel Serverless Functions.",
   "engines": {
-    "node": "20.x || 22.x || 24.x"
+    "node": "22.x || 24.x"
   },
   "dependencies": {
     "@upstash/redis": "^1.35.3",
-    "axios": "^1.9.0",
+    "axios": "^1.20.0",
     "dotenv": "^16.4.7",
-    "express": "^4.21.3",
-    "jsonwebtoken": "^9.0.2",
-    "simple-oauth2": "^5.1.0"
+    "express": "^4.22.3"
   }
 }

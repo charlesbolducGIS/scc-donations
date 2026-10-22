@@ -20,7 +20,7 @@ This application enables the Sutton Conservation Commission (SCC) to accept dona
 
 ## Setup
 
-**Prerequisites:** Node.js 20.x, 22.x, or 24.x and npm 7+.
+**Prerequisites:** Node.js 22.x or 24.x (latest patch release) and npm 7+.
 
 1. **Clone the repository and install dependencies:**
     ```sh
